@@ -1,0 +1,39 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env files
+.env*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# built apks
+sortify-*.apk
+
+# internal planning (not for public repo)
+PLAN.md
+HARDWARE.md
+mobile/.claude/
+mobile/.vscode/
+mobile/AGENTS.md
+mobile/CLAUDE.md
+build-log.txt
+/s/
