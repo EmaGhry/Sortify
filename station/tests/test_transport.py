@@ -14,7 +14,6 @@ class StationTransportTests(unittest.TestCase):
         self.requests = []
         self.prediction = {"label": "paper", "score": 0.93}
         self.board_reply = None
-        self.firmware_version = 2
         test = self
 
         class Peer(BaseHTTPRequestHandler):
@@ -34,7 +33,7 @@ class StationTransportTests(unittest.TestCase):
             def do_GET(self):
                 test.requests.append((self.path, self.headers.get("X-Sortify-Bench")))
                 if self.path == "/health":
-                    self.reply({"station": "sortify-bench", "version": test.firmware_version})
+                    self.send_error(404)
                     return
                 material = self.path.rsplit("=", 1)[-1]
                 self.reply(test.board_reply or {"material": material})
@@ -71,11 +70,10 @@ class StationTransportTests(unittest.TestCase):
         self.assertEqual(result["destination"], "other")
         self.assertEqual(self.requests[-1], ("/sort?type=other", "1"))
 
-    def test_old_firmware_cannot_acknowledge_other_as_a_destination(self):
-        self.firmware_version = 1
-        with self.assertRaisesRegex(BoardError, "firmware v2"):
-            self.board.indicate("other")
-        self.assertEqual(self.requests, [("/health", "1")])
+    def test_firmware_without_health_endpoint_receives_other(self):
+        self.board.check()
+        self.board.indicate("other")
+        self.assertEqual(self.requests, [("/sort?type=other", "1")])
 
     def test_model_error_does_not_trigger_hardware(self):
         self.prediction = {"label": "plastic", "score": "high"}

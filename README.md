@@ -64,9 +64,9 @@ Content-Type: image/jpeg
 
 Modelul trimite exact una dintre cele cinci etichete: `glass` (Sticlă), `metal` (Metal), `plastic` (PET/plastic), `paper` (Hârtie/carton) sau `other` (Altele). Pragul implicit este 0,75 și se poate regla cu `--threshold`. La `other` sau sub prag, stația trimite `other` la placă. Imaginea merge doar la endpointul modelului, iar ESP32 primește doar materialul prin HTTP.
 
-## Firmware și montaj
+## Firmware de referință și montaj
 
-Acești pași sunt pentru o placă pe care trebuie încărcat firmware-ul Sortify. Profilul PlatformIO este pentru ESP32 DevKit clasic cu `esp32dev`. În PowerShell, din rădăcina repo-ului:
+Acești pași sunt pentru montajele care folosesc firmware-ul de referință din repo. Pentru placa echipei, folosiți firmware-ul Emei și adresa serverului ESP32. Profilul PlatformIO este pentru ESP32 DevKit clasic cu `esp32dev`. În PowerShell, din rădăcina repo-ului:
 
 ```powershell
 $env:PLATFORMIO_CORE_DIR = Join-Path $PWD '.pio'
@@ -105,7 +105,7 @@ Testul de ieșiri cere Enter înainte de fiecare comandă. Calibrați servo-ul f
 
 Semnalul servo este pe GPIO 13. Verificați continuitatea și polaritatea LED-urilor în montaj. Profilul folosește LED-uri active HIGH, cu anodul către GPIO și rezistența spre masă. Alimentați servo-ul separat conform fișei lui, cu masă comună. Păstrați plusul sursei servo separat de alimentarea plăcii. [Ghid ESP32 DevKitC](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32/esp-dev-kits-en-master-esp32.pdf) · [TowerPro SG90](https://towerpro.com.tw/product/sg90-analog/)
 
-ESP32 creează propriul Wi-Fi cu parolă și primește `GET /sort?type=plastic`, cu headerul `X-Sortify-Bench: 1`. Valorile sunt `glass`, `metal`, `plastic`, `paper` și `other`. Placa răspunde, de exemplu, cu `{"material":"plastic"}` după ce setează ieșirile. Firmware-ul v2 raportează `"version":2` la `/health` și are o poziție servo pentru **Altele**. Încărcați v2 pe placa folosită la demo și verificați poziția nouă cu `python -m station.esp_link`. Confirmarea dovedește că firmware-ul a aplicat comanda. Mișcarea săgeții se verifică vizual.
+Aplicația verifică legătura cu adresa ESP32 și trimite `GET /sort?type=plastic`, cu headerul `X-Sortify-Bench: 1`. Valorile sunt `glass`, `metal`, `plastic`, `paper` și `other`. Pentru confirmare, placa răspunde, de exemplu, cu `{"material":"plastic"}`. Poziția servo pentru **Altele** se configurează în firmware-ul plăcii. Verificați mișcarea cu `python -m station.esp_link` pe montajul real.
 
 ## Demo pentru juriu
 

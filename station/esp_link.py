@@ -1,5 +1,6 @@
 from http.client import HTTPConnection, HTTPException
 import json
+from socket import create_connection
 from urllib.parse import urlencode, urlsplit
 
 from .model import DESTINATIONS
@@ -38,14 +39,15 @@ class Board:
             connection.close()
 
     def check(self):
-        if self._request("/health") != {"station": "sortify-bench", "version": 2}:
-            raise BoardError("ESP32 needs Sortify firmware v2 to route all five materials.")
+        try:
+            with create_connection((self.host, self.port or 80), timeout=2):
+                pass
+        except OSError as exc:
+            raise BoardError("Nu pot ajunge la ESP32. Verifică rețeaua Wi-Fi și adresa plăcii.") from exc
 
     def indicate(self, destination: str):
         if destination not in DESTINATIONS:
             raise ValueError("Invalid destination")
-        if destination == "other":
-            self.check()
         if self._request("/sort?" + urlencode({"type": destination})) != {"material": destination}:
             raise BoardError("ESP32 did not confirm the requested material.")
 
