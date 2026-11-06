@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { observePresence, startPresence, type PresenceState } from "./presence";
+import { PresentationScreen, type PresentationView } from "./presentation";
 
 const destinations = {
   glass: { name: "Sticlă", color: "#4ade80", led: "verde" },
@@ -70,6 +71,7 @@ function captureFrame(video: HTMLVideoElement) {
 
 export function BenchKiosk() {
   const stage = useRef<HTMLElement>(null);
+  const presentationTrigger = useRef<HTMLButtonElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);
   const mounted = useRef(false);
@@ -81,6 +83,7 @@ export function BenchKiosk() {
   const [result, setResult] = useState<Result | null>(null);
   const [automatic, setAutomatic] = useState<PresenceState["phase"] | null>(null);
   const [checking, setChecking] = useState(false);
+  const [presenting, setPresenting] = useState(false);
   const autoActive = automatic !== null;
 
   const refresh = useCallback(async () => {
@@ -233,9 +236,59 @@ export function BenchKiosk() {
 
   const choice = result ? destinations[result.destination] : null;
   const button = "border border-white/25 px-4 py-3 text-sm font-bold hover:bg-white/10 disabled:opacity-40";
+  const simulated = station?.mode === "simulation";
+
+  function exitPresentation() {
+    setPresenting(false);
+    if (document.fullscreenElement === stage.current) void document.exitFullscreen().catch(() => {});
+  }
+
+  useEffect(() => {
+    if (!presenting) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setPresenting(false);
+    }
+    function onFullscreenChange() {
+      if (!document.fullscreenElement) setPresenting(false);
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      presentationTrigger.current?.focus();
+    };
+  }, [presenting]);
+
+  let presentation: PresentationView = {
+    title: "Prezintă ambalajul",
+    detail: "Așază un singur obiect în centrul zonei de scanare.",
+    kind: "ready",
+  };
+  if (error || result?.hardware === "unconfirmed") {
+    presentation = { title: "Verifică stația", detail: error ?? "Comanda ESP32 nu a fost confirmată.", kind: "attention" };
+  } else if (busy) {
+    presentation = { title: "Se scanează…", detail: "Ține ambalajul nemișcat.", kind: "scanning" };
+  } else if (checking || automatic === "calibrating") {
+    presentation = { title: "Se pregătește stația", detail: "Lasă zona de scanare goală.", kind: "scanning" };
+  } else if (automatic === "steady") {
+    presentation = { title: "Ține ambalajul nemișcat", detail: "Camera se pregătește să-l scaneze.", kind: "scanning" };
+  } else if (result && choice && automatic !== "ready") {
+    const indication = simulated ? "LED simulat" : result.hardware === "acknowledged" ? "LED" : "";
+    const next = result.destination === "reject" ? "Retrage obiectul." : "Eliberează zona de scanare.";
+    presentation = {
+      title: choice.name,
+      detail: indication ? `${indication} ${choice.led} · ${next}` : next,
+      kind: result.destination === "reject" ? "attention" : "result",
+      color: choice.color,
+    };
+  } else if (!station || (!simulated && !autoActive)) {
+    presentation = { title: "Stația este în pauză", detail: "Deschide Configurare pentru a porni scanarea.", kind: "attention" };
+  }
 
   return (
     <section ref={stage} lang="ro" className="mx-auto my-8 max-w-6xl overflow-auto bg-[#10221a] p-5 text-white sm:p-10">
+      <div inert={presenting || undefined}>
       <header className="mb-7 flex flex-wrap items-start justify-between gap-4 border-b border-white/20 pb-5">
         <div>
           <p className="font-mono text-xs uppercase tracking-widest text-emerald-300">Sortify · Stație de sortare</p>
@@ -246,10 +299,10 @@ export function BenchKiosk() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href="/operator" className={button}>Operator</Link>
-          <button className={button} onClick={() => {
-            if (document.fullscreenElement) void document.exitFullscreen();
-            else void stage.current?.requestFullscreen().catch(() => setError("Browserul nu permite modul ecran complet."));
-          }}>Ecran complet</button>
+          <button ref={presentationTrigger} className={button} onClick={() => {
+            setPresenting(true);
+            void stage.current?.requestFullscreen?.().catch(() => {});
+          }}>Mod prezentare</button>
         </div>
       </header>
 
@@ -327,6 +380,15 @@ export function BenchKiosk() {
           {!station && <button className={`${button} mt-4`} onClick={() => void refresh()}>Reconectează stația</button>}
         </div>
       </div>
+      </div>
+      {presenting && (
+        <PresentationScreen view={presentation} busy={busy}
+          source={simulated ? "Simulare · hardware dezactivat" : station?.mode === "preview" ? "Previzualizare · hardware dezactivat" : "Stație de sortare"}
+          onExit={exitPresentation}
+          onExample={simulated && !result ? () => void scan("metal") : undefined}
+          onReset={simulated && result ? () => setResult(null) : undefined}
+        />
+      )}
     </section>
   );
 }

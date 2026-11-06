@@ -101,13 +101,15 @@ ESP32 creează propriul Wi-Fi cu parolă și primește `GET /sort?type=plastic`,
 
 ## Demo pentru juriu
 
-1. Așezați patru cartonașe în dreptul pozițiilor calibrate și deschideți kiosk-ul în ecran complet.
+1. Așezați patru cartonașe în dreptul pozițiilor calibrate și deschideți kiosk-ul.
 2. Fixați camera spre un fundal simplu și porniți-o. Goliți cadrul și apăsați **Calibrează cu zona goală**. În modul hardware, kiosk-ul verifică mai întâi că ESP32 răspunde.
-3. Când apare **Pregătit**, rugați un jurat să aleagă între două ambalaje testate și să-l țină nemișcat în centru. Arătați rezultatul, LED-ul și săgeata. Retrageți obiectul complet și așteptați din nou **Pregătit** înainte de al doilea ambalaj.
+3. Când apare **Pregătit**, apăsați **Mod prezentare**. Rugați un jurat să aleagă între două ambalaje testate și să-l țină nemișcat în centru. Arătați rezultatul, LED-ul și săgeata. Retrageți obiectul complet și așteptați din nou **Prezintă ambalajul** înainte de al doilea. **Configurare** sau Escape readuce panoul cu camera și calibrarea.
 4. Folosiți un exemplu verificat în prealabil pentru **Altele**. LED-ul alb se aprinde și săgeata rămâne pe loc.
 5. Arătați [istoricul operatorului](http://127.0.0.1:3000/operator) și randarea cu eticheta **Conceptul aparatului final**. Păstrați un clip al unei rulări reale pentru situația în care montajul are probleme în sală.
 
 Folosiți lumină constantă și o singură filă cu camera. Detectarea prezenței se bazează pe diferența față de cadrul gol. Recalibrați dacă schimbați camera, poziția sau lumina. **Scanează obiectul** rămâne disponibil după oprirea automatizării. La eroare de model, comandă neconfirmată, cameră deconectată sau filă ascunsă, automatizarea se oprește și se rearmează manual.
+
+Pentru o repetiție fără model sau placă, porniți serviciul cu `--simulate`. În **Mod prezentare**, apăsați **Simulează o doză** și apoi **Reia simularea** ca să vedeți ecranul de așteptare. Ecranul indică explicit că ieșirile fizice sunt dezactivate.
 
 Stația păstrează local metadatele scanării în `station/data/station.sqlite3`. Simulările sunt excluse. Afișajul operatorului separă previzualizările de comenzile ESP32. Folosiți `--history <cale.sqlite3>` pentru o bază separată de test.
 
