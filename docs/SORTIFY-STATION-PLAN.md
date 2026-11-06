@@ -20,7 +20,7 @@ Plan de lucru pentru prototip. Starea implementării se verifică în repo și �
 | --- | --- |
 | Web | Păstrăm Next.js, React, Tailwind, componentele și traducerile existente. Adăugăm `/kiosk`, apoi `/operator`. Scanarea publică existentă poate rămâne o funcție separată. |
 | Android | Expo există în `mobile/` și folosește backendul web. Ecranul de pe automat rulează într-un browser pe laptop sau pe un ecran conectat la acesta. Aplicația Android nu este o dependență a stației. |
-| AI | Păstrăm ideea din Word cu Python, cameră, model local și USB serial. Codul live din Next folosește Gemini sau OpenAI în checkoutul actual. Serviciul local al stației va fi un modul nou, cu model ONNX pe PC ca alegere inițială. |
+| AI | Camera din browser captează obiectul. Serviciul Python folosește endpointul modelului echipei, care rulează local pe laptopul colegului. |
 | Backend | Pentru o stație, agentul Python deține camera, serialul, starea și SQLite. Next afișează informația prin API pe același PC. Astfel evităm migrarea la Vite și duplicarea backendului propuse în Word. |
 | Hardware | Wordul adaugă o clapetă cu servo și un senzor de prezență. În schema primită se vede un singur SG90. Pentru fluxul complet, recomand o zonă de așteptare cu clapetă și un jgheab selector separat. |
 | Contracte și rapoarte | Păstrăm simulatorul, testarea pe obiecte noi și corecția umană. Adăugăm ID pentru fiecare ciclu și separăm confirmarea fizică, succesul inferat și acuratețea verificată. |
@@ -53,7 +53,7 @@ Alimentați placa prin USB și servo-urile de la o sursă externă stabilizată,
 ## 4. Arhitectura software
 
 ```text
-Camera USB → agent Python pe PC → model ONNX local → regulile stației
+Camera USB → agent Python pe PC → modelul echipei → regulile stației
                        ↕ USB serial                        │
                  ESP32 → LED-uri, servo-uri și senzori     │
                        └────── starea ciclului ────────────┘
@@ -64,7 +64,7 @@ Camera USB → agent Python pe PC → model ONNX local → regulile stației
 ```
 
 - `firmware/` · PlatformIO cu Arduino C++, configurație cu pinii, pozițiile, timpii și polaritățile confirmate. Buclă neblocantă, debounce și un singur ciclu activ. Blochează eliberarea dacă rezultatul, starea sau ID-ul sunt invalide. Modul de calibrare este disponibil prin serial doar în stare inactivă, cu tavă goală.
-- `station/` · Python cu OpenCV, pyserial, ONNX Runtime pe CPU, API local și SQLite. Agentul rezervă camera și portul serial și rulează singur bucla de sortare. Folosește un model încălzit la pornire și cadre proaspete, declanșate de senzor. Începem cu un cadru bun, apoi verificăm dacă mai multe cadre reduc erorile suficient pentru latența adăugată. [API-ul ONNX Runtime](https://onnxruntime.ai/docs/api/python/api_summary)
+- `station/` · serviciul Python primește cadrele, apelează endpointul modelului echipei, trimite destinația la ESP32 și salvează metadatele în SQLite. Pentru mecanismul complet, senzorul poate declanșa capturarea unui cadru proaspăt.
 - `app/kiosk/` și `app/operator/` · UI în Next.js. Ecranul public primește numai starea ciclului și mesajul pentru utilizator. Portalul arată starea stației, ultimele evenimente, corecții și export CSV. Pentru MVP, portalul este pe PC-ul local. Accesul din rețea necesită autentificare, autorizare și configurare explicită. Interfața publică nu are acces la serial sau la comenzi de mișcare.
 - `config/station.example.json` · configurație de referință pentru ID stație, mapare clasă–destinație, praguri de acceptare, etichete RO/EN și limite pentru demo. Firmware-ul rămâne sursa de adevăr pentru pini și poziții. Testul de integrare verifică maparea cu etichetele de pe compartimente.
 - `docs/` · schema revizuită, protocolul, pașii de instalare, raportul de test și scenariul de demo. Dacă aveți fișierul KiCad, păstrați sursa schematicii și un PDF sau PNG exportat, ca diferențele față de cablaj să fie verificabile.
@@ -121,7 +121,7 @@ README-ul public poate începe astfel, cu starea actualizată odată cu fiecare 
 Sub descriere, adăugați în această ordine:
 
 1. **Demo și stare** · o poză sau un clip real, cele patru destinații și un tabel „implementat / planificat”. Menționați în mod explicit când datele sunt simulate sau eliberarea e manuală.
-2. **Pornirea proiectului existent** · `npm ci`, apoi `npm run dev` și `http://localhost:3000`. Documentați `.env.example`, diferența dintre exemplele demo și clasificarea live prin Gemini/OpenAI. Corectați afirmația actuală că scannerul existent are deja model local și prezentați bucla de antrenare din scanările publicului doar dacă ajunge să existe în produs.
+2. **Pornirea proiectului** · `npm ci`, apoi `npm run dev` și `http://localhost:3000`. README documentează exemplele demo și conectarea modelului echipei pentru clasificare.
 3. **Pornirea stației** · după implementare, listați versiunile testate de Node, Python, PlatformIO și model, comenzile pentru flash și pornire, camera, portul COM, modelul și comanda simulatorului. Ordinea recomandată este alimentare și calibrare, agent, apoi Next și `/kiosk`. Link separat către schema și pașii de verificare de banc.
 4. **Verificare și depanare** · `npm run build`, `npm run i18n:validate`, compilarea firmware-ului, testele stației și lista de verificare fizică. Includeți camera ocupată, COM greșit, model incompatibil, ESP32 resetat, servo blocat și diferența între „trecere detectată” și „destinație verificată”.
 

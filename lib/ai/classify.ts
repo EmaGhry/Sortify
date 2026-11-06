@@ -1,106 +1,81 @@
+import sharp from "sharp";
 import { z } from "zod";
-import { MATERIALS, type AIResult, type AnalysisResult, type Language, type Material } from "../types";
 import { profileOf } from "../materials";
-import { classifyWithGemini } from "./gemini";
-import { classifyWithOpenAI } from "./openai";
+import type { AnalysisResult, Language } from "../types";
+
+const stationUrl = "http://127.0.0.1:8765";
+const materials = {
+  glass: "GLASS",
+  metal: "METAL",
+  plastic: "PLASTIC",
+  paper: "PAPER",
+  reject: "OTHER",
+} as const;
+const predictionSchema = z.object({
+  destination: z.enum(["glass", "metal", "plastic", "paper", "reject"]),
+  score: z.number().min(0).max(1),
+});
 
 export class ProviderUnavailableError extends Error {}
 
-const aiResultSchema = z.object({
-  material: z.string().transform((v) => {
-    const normalized = v.toUpperCase().trim().replace(/\s+/g, "_");
-    return (MATERIALS.includes(normalized as Material) ? normalized : "OTHER") as Material;
-  }),
-  item_name: z.string().min(1).max(120),
-  confidence: z.coerce.number().min(0).max(1),
-  recyclable: z.coerce.boolean(),
-  tips: z.array(z.string().max(160)).max(4).default([]),
-  eco_fact: z.string().max(300).optional(),
-  reasoning: z.string().max(300).optional(),
-});
+export async function hasLiveProvider(): Promise<boolean> {
+  if (process.env.SORTIFY_BENCH !== "1") return false;
+  try {
+    const response = await fetch(stationUrl + "/status", {
+      cache: "no-store",
+      headers: { "X-Sortify-Bench": "1" },
+      signal: AbortSignal.timeout(1500),
+    });
+    return response.ok && (await response.json()).model_source === "network";
+  } catch {
+    return false;
+  }
+}
 
-const rawSchema = z.record(z.string(), z.unknown());
-
-export interface AnalyzeInput {
+export async function analyzeImage(input: {
   imageBase64: string;
-  mimeType: string;
   language: Language;
-}
-
-export interface AnalyzeOutput {
-  result: AnalysisResult;
-  provider: "gemini" | "openai";
-}
-
-export function hasLiveProvider(): boolean {
-  return Boolean(process.env.GOOGLE_AI_API_KEY || process.env.OPENAI_API_KEY);
-}
-
-function parseAIResult(payload: unknown): AIResult {
-  const obj = rawSchema.safeParse(payload);
-  if (!obj.success) throw new Error("AI response was not a JSON object");
-  const parsed = aiResultSchema.safeParse(obj.data);
-  if (!parsed.success) {
-    throw new Error(`AI response failed validation: ${parsed.error.issues[0]?.message ?? "unknown"}`);
+}): Promise<{ result: AnalysisResult }> {
+  if (process.env.SORTIFY_BENCH !== "1") throw new ProviderUnavailableError();
+  const jpeg = await sharp(Buffer.from(input.imageBase64, "base64"), { limitInputPixels: 16_000_000 })
+    .rotate()
+    .resize(900, 900, { fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 85 })
+    .toBuffer();
+  let response: Response;
+  try {
+    response = await fetch(stationUrl + "/classify", {
+      method: "POST",
+      headers: { "Content-Type": "image/jpeg", "X-Sortify-Bench": "1" },
+      body: new Uint8Array(jpeg),
+      signal: AbortSignal.timeout(8_000),
+    });
+  } catch {
+    throw new ProviderUnavailableError();
   }
-  const d = parsed.data;
+  if (response.status === 503) throw new ProviderUnavailableError();
+  if (!response.ok) throw new Error("The team model could not classify the image.");
+
+  const prediction = predictionSchema.parse(await response.json());
+  const material = materials[prediction.destination];
+  const profile = profileOf(material);
+  const recyclable = material !== "OTHER";
   return {
-    material: d.material,
-    itemName: d.item_name,
-    confidence: d.confidence,
-    recyclable: d.recyclable,
-    tips: d.tips,
-    ecoFact: d.eco_fact,
-    reasoning: d.reasoning,
+    result: {
+      id: crypto.randomUUID(),
+      createdAt: Date.now(),
+      provider: "team",
+      demo: false,
+      itemName: profile.label[input.language],
+      confidence: prediction.score,
+      recyclable,
+      aiTips: [],
+      material,
+      binLabel: profile.bin.label[input.language],
+      binColor: profile.bin.color,
+      instructions: profile.instructions[input.language],
+      co2SavedG: recyclable ? profile.co2PerItemG : 0,
+      points: 10 + (recyclable ? 10 : 0),
+    },
   };
-}
-
-/**
- * Server-side enrichment: category-specific guidance comes from our own
- * knowledge base (never from the model) for consistent bin colours & advice.
- */
-function enrich(ai: AIResult, provider: "gemini" | "openai", demo: boolean): AnalysisResult {
-  const profile = profileOf(ai.material);
-  return {
-    id: `scan_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
-    createdAt: Date.now(),
-    provider,
-    demo,
-    itemName: ai.itemName,
-    confidence: ai.confidence,
-    recyclable: ai.recyclable,
-    reasoning: ai.reasoning,
-    aiTips: ai.tips,
-    ecoFact: ai.ecoFact,
-    material: ai.material,
-    binLabel: profile.bin.label.en, // client re-localizes from material id
-    binColor: profile.bin.color,
-    instructions: profile.instructions.en, // client re-localizes
-    co2SavedG: ai.recyclable ? profile.co2PerItemG : 0,
-    points: 10 + (ai.recyclable ? 10 : 0),
-  };
-}
-
-export async function analyzeImage(input: AnalyzeInput): Promise<AnalyzeOutput> {
-  const geminiKey = process.env.GOOGLE_AI_API_KEY;
-  const openaiKey = process.env.OPENAI_API_KEY;
-
-  let provider: "gemini" | "openai";
-  let ai: AIResult;
-
-  if (geminiKey) {
-    provider = "gemini";
-    ai = parseAIResult(await classifyWithGemini(input.imageBase64, input.mimeType, input.language));
-  } else if (openaiKey) {
-    provider = "openai";
-    ai = parseAIResult(await classifyWithOpenAI(input.imageBase64, input.mimeType, input.language));
-  } else {
-    throw new ProviderUnavailableError(
-      "No AI provider configured. Add GOOGLE_AI_API_KEY or OPENAI_API_KEY to .env.local",
-    );
-  }
-
-  // Defensive floor: never claim near-certain confidence on a guess.
-  ai.confidence = Math.min(ai.confidence, ai.material === "OTHER" ? 0.5 : 1);
-  return { result: enrich(ai, provider, false), provider };
 }

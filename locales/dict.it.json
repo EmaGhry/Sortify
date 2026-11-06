@@ -81,7 +81,7 @@
   "badge.toastTitle": "Badge sbloccato!",
   "toast.errorTitle": "Ops, un errore",
 
-  "error.noProvider": "Nessun provider AI configurato. Aggiungi GOOGLE_AI_API_KEY o OPENAI_API_KEY in .env.local e riavvia il server.",
+  "error.noProvider": "Il modello del team non è disponibile. Avvia la stazione con l’indirizzo del modello o prova un esempio.",
   "error.provider": "Il servizio AI ha restituito un errore. Riprova o usa l'esempio demo.",
   "error.tooLarge": "L'immagine è troppo grande (max 8MB).",
   "error.badType": "Formato immagine non supportato. Usa JPG, PNG o WebP.",

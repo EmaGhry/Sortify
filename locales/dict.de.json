@@ -81,7 +81,7 @@
   "badge.toastTitle": "Abzeichen freigeschaltet!",
   "toast.errorTitle": "Ups, ein Fehler",
 
-  "error.noProvider": "Kein KI-Anbieter konfiguriert. Füge GOOGLE_AI_API_KEY oder OPENAI_API_KEY zu .env.local hinzu und starte den Server neu.",
+  "error.noProvider": "Das Modell des Teams ist nicht verfügbar. Starte die Station mit dem Modell-Endpunkt oder nutze ein Demo-Beispiel.",
   "error.provider": "Der KI-Dienst hat einen Fehler gemeldet. Versuche es erneut oder nutze das Demo-Beispiel.",
   "error.tooLarge": "Bild ist zu groß (max. 8MB).",
   "error.badType": "Nicht unterstütztes Bildformat. Nutze JPG, PNG oder WebP.",

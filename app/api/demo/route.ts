@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { demoResult } from "@/lib/ai/demo";
-import { MATERIALS } from "@/lib/types";
+import { STATION_MATERIALS } from "@/lib/types";
 import { clientIp, rateLimit, AI_LIMITS, sameOriginOrExternal, guardHost } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 const bodySchema = z.object({
   language: z.enum(["ro", "en", "de", "hu", "fr", "it", "es"]).default("en"),
-  pick: z.enum(MATERIALS as [string, ...string[]]).optional(),
+  pick: z.enum(STATION_MATERIALS).optional(),
 });
 
 export async function POST(req: Request) {

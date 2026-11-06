@@ -81,7 +81,7 @@
   "badge.toastTitle": "¡Insignia desbloqueada!",
   "toast.errorTitle": "Ups, un error",
 
-  "error.noProvider": "Ningún proveedor de IA configurado. Añade GOOGLE_AI_API_KEY u OPENAI_API_KEY en .env.local y reinicia el servidor.",
+  "error.noProvider": "El modelo del equipo no está disponible. Inicia la estación con la dirección del modelo o prueba un ejemplo.",
   "error.provider": "El servicio de IA devolvió un error. Inténtalo de nuevo o usa el ejemplo demo.",
   "error.tooLarge": "La imagen es demasiado grande (máx. 8MB).",
   "error.badType": "Formato de imagen no admitido. Usa JPG, PNG o WebP.",

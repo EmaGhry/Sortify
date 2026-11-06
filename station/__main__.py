@@ -7,9 +7,7 @@ import sqlite3
 from threading import Lock
 from time import perf_counter
 
-from .model import (
-    Classifier, DEFAULT_MODEL, DESTINATIONS, HttpClassifier, InvalidImage, ModelUnavailable, Prediction,
-)
+from .model import DESTINATIONS, HttpClassifier, ModelUnavailable, Prediction
 from .esp_link import Board, BoardError, DEFAULT_ESP_URL
 from .history import History
 
@@ -76,7 +74,7 @@ class Station:
     def model_source(self):
         if self.classifier is None:
             return "simulation"
-        return "network" if isinstance(self.classifier, HttpClassifier) else "local"
+        return "network"
 
 
 def make_handler(station):
@@ -137,7 +135,7 @@ def make_handler(station):
         def do_POST(self):
             if not self.allowed():
                 return
-            if self.path != "/scan":
+            if self.path not in ("/scan", "/classify"):
                 self.respond(404, {"error": "Unknown station endpoint."})
                 return
             try:
@@ -154,9 +152,17 @@ def make_handler(station):
                 data = self.rfile.read(size)
                 if len(data) != size:
                     raise ValueError("Incomplete request.")
-                result = station.scan(self.headers.get_content_type(), data)
-            except InvalidImage:
-                self.respond(400, {"error": "Capture a valid JPEG image."})
+                content_type = self.headers.get_content_type()
+                if self.path == "/classify":
+                    if not station.classifier:
+                        self.respond(503, {"error": "Team model is unavailable."})
+                        return
+                    if content_type != "image/jpeg":
+                        raise ValueError("Capture a JPEG from the camera.")
+                    prediction = station.classifier.predict(data)
+                    result = {"destination": prediction.destination, "score": prediction.score}
+                else:
+                    result = station.scan(content_type, data)
             except (ValueError, UnicodeError):
                 self.respond(400, {"error": "Invalid scan input."})
             except TimeoutError:
@@ -165,7 +171,7 @@ def make_handler(station):
                 self.respond(502, {"error": "Modelul din rețea nu răspunde corect. Verifică IP-ul și endpointul."})
             except Exception as exc:
                 print(f"Scan failed: {exc}", flush=True)
-                self.respond(500, {"error": "Local inference failed. See the station terminal."})
+                self.respond(500, {"error": "Scan failed. See the station terminal."})
             else:
                 self.respond(200, result)
             finally:
@@ -178,12 +184,10 @@ def main():
     parser = argparse.ArgumentParser(description="Sortify bench demo service on 127.0.0.1.")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--simulate", action="store_true", help="Preset results, no camera/model/ESP32.")
-    mode.add_argument("--preview", action="store_true", help="Run local AI without moving hardware.")
+    mode.add_argument("--preview", action="store_true", help="Use the team model without moving hardware.")
     mode.add_argument("--esp", nargs="?", const=DEFAULT_ESP_URL, metavar="URL",
                       help="Run AI and send material to the ESP32 SoftAP.")
-    model = parser.add_mutually_exclusive_group()
-    model.add_argument("--model", type=Path, default=DEFAULT_MODEL, help="WasteWise-compatible ONNX file.")
-    model.add_argument("--model-url", help="HTTP(S) endpoint accepting JPEG and returning label and score.")
+    parser.add_argument("--model-url", help="Team model endpoint accepting JPEG and returning label and score.")
     parser.add_argument("--threshold", type=float, default=0.75, help="Minimum class score to indicate.")
     parser.add_argument("--history", type=Path, default=DEFAULT_HISTORY, help="SQLite file for live scan history.")
     args = parser.parse_args()
@@ -195,13 +199,10 @@ def main():
             parser.error("--model-url requires --preview or --esp")
         station = Station("simulation")
     else:
-        if not args.model_url and not args.model.is_file():
-            parser.error(f"Model missing: {args.model}. Run python -m station.download_model.")
+        if not args.model_url:
+            parser.error("--preview and --esp require --model-url with the team model endpoint")
         try:
-            if args.model_url:
-                classifier = HttpClassifier(args.model_url, args.threshold, os.getenv("SORTIFY_MODEL_TOKEN"))
-            else:
-                classifier = Classifier(args.model, args.threshold)
+            classifier = HttpClassifier(args.model_url, args.threshold, os.getenv("SORTIFY_MODEL_TOKEN"))
             board = Board(args.esp) if args.esp else None
         except Exception as exc:
             parser.exit(1, f"Could not initialize the station: {exc}\n")

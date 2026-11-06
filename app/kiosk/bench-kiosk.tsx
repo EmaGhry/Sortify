@@ -7,14 +7,13 @@ import { observePresence, startPresence, type PresenceState } from "./presence";
 const destinations = {
   glass: { name: "Sticlă", color: "#4ade80", led: "verde" },
   metal: { name: "Metal", color: "#f87171", led: "roșu" },
-  plastic: { name: "Plastic", color: "#facc15", led: "galben" },
+  plastic: { name: "PET / plastic", color: "#facc15", led: "galben" },
   paper: { name: "Hârtie / carton", color: "#60a5fa", led: "albastru" },
-  reject: { name: "Obiect neacceptat", color: "#f8fafc", led: "alb" },
+  reject: { name: "Altele", color: "#f8fafc", led: "alb" },
 } as const;
 
 const labels: Record<string, string> = {
-  glass: "Sticlă", metal: "Metal", plastic: "Plastic", paper: "Hârtie",
-  cardboard: "Carton", battery: "Baterie", biological: "Deșeu organic", trash: "Deșeu mixt",
+  glass: "Sticlă", metal: "Metal", plastic: "PET / plastic", paper: "Hârtie / carton", other: "Altele",
 };
 const outputs = {
   bench: "ESP32 prin Wi-Fi",
@@ -22,8 +21,7 @@ const outputs = {
   simulation: "Exemple predefinite",
 } as const;
 const modelSources = {
-  local: "Model local pe acest PC",
-  network: "Model prin rețea",
+  network: "Modelul echipei prin rețea",
   simulation: "Simulare",
 } as const;
 type Mode = keyof typeof outputs;

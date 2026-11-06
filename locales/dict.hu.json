@@ -81,7 +81,7 @@
   "badge.toastTitle": "Jelvény feloldva!",
   "toast.errorTitle": "Hoppá, hiba",
 
-  "error.noProvider": "Nincs beállítva MI-szolgáltató. Adj hozzá GOOGLE_AI_API_KEY vagy OPENAI_API_KEY kulcsot a .env.local fájlhoz, majd indítsd újra a szervert.",
+  "error.noProvider": "A csapat modellje nem érhető el. Indítsd el az állomást a modell címével, vagy próbálj ki egy bemutatót.",
   "error.provider": "A MI-szolgáltatás hibát adott. Próbáld újra, vagy használd a demó példát.",
   "error.tooLarge": "A kép túl nagy (max. 8MB).",
   "error.badType": "Nem támogatott képformátum. Használj JPG, PNG vagy WebP fájlt.",

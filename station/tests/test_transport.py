@@ -2,8 +2,9 @@ import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 import unittest
+from urllib.request import Request, urlopen
 
-from station.__main__ import Station
+from station.__main__ import HOST, PORT, Station, make_handler
 from station.esp_link import Board, BoardError
 from station.model import HttpClassifier, ModelUnavailable
 
@@ -11,7 +12,7 @@ from station.model import HttpClassifier, ModelUnavailable
 class StationTransportTests(unittest.TestCase):
     def setUp(self):
         self.requests = []
-        self.prediction = {"label": "cardboard", "score": 0.93}
+        self.prediction = {"label": "paper", "score": 0.93}
         self.board_reply = None
         test = self
 
@@ -77,3 +78,25 @@ class StationTransportTests(unittest.TestCase):
         self.assertEqual(result["hardware"], "disabled")
         self.assertEqual(result["model_source"], "simulation")
         self.assertEqual(self.requests, [])
+
+    def test_read_only_scanner_never_commands_board(self):
+        server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(self.station))
+        thread = Thread(target=server.serve_forever, kwargs={"poll_interval": 0.01})
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(thread.join)
+        self.addCleanup(server.shutdown)
+        request = Request(
+            f"http://127.0.0.1:{server.server_port}/classify",
+            data=b"frame",
+            headers={"Host": f"{HOST}:{PORT}", "Content-Type": "image/jpeg", "X-Sortify-Bench": "1"},
+        )
+        with urlopen(request, timeout=2) as response:
+            self.assertEqual(json.load(response), {"destination": "paper", "score": 0.93})
+        self.assertEqual(self.requests, [("/predict", "image/jpeg", b"frame")])
+
+    def test_model_label_outside_the_five_categories_is_rejected(self):
+        self.prediction = {"label": "cardboard", "score": 0.93}
+        with self.assertRaises(ModelUnavailable):
+            self.station.scan("image/jpeg", b"frame")
+        self.assertEqual(len(self.requests), 1)

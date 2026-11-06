@@ -97,7 +97,6 @@ export async function POST(req: Request) {
   try {
     const { result } = await analyzeImage({
       imageBase64: img.base64,
-      mimeType: img.mimeType,
       language,
     });
 

@@ -4,13 +4,11 @@ import { hasLiveProvider } from "@/lib/ai/classify";
 export const runtime = "nodejs";
 
 export async function GET() {
+  const live = await hasLiveProvider();
   return NextResponse.json(
     {
-      live: hasLiveProvider(),
-      providers: {
-        gemini: Boolean(process.env.GOOGLE_AI_API_KEY),
-        openai: Boolean(process.env.OPENAI_API_KEY),
-      },
+      live,
+      providers: { team: live },
     },
     { headers: { "Cache-Control": "no-store" } },
   );

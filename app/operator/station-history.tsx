@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 const materials = {
   glass: "Sticlă",
   metal: "Metal",
-  plastic: "Plastic",
+  plastic: "PET / plastic",
   paper: "Hârtie / carton",
-  reject: "Obiect neacceptat",
+  reject: "Altele",
 };
 const acknowledgements = {
   acknowledged: "Comandă confirmată",

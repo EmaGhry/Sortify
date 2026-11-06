@@ -23,6 +23,8 @@ export const MATERIALS: Material[] = [
   "OTHER",
 ];
 
+export const STATION_MATERIALS = ["GLASS", "METAL", "PLASTIC", "PAPER", "OTHER"] as const;
+
 export type Language = "ro" | "en" | "de" | "fr" | "it" | "es" | "hu";
 
 export interface LocaleInfo {
@@ -42,22 +44,11 @@ export const LOCALES: LocaleInfo[] = [
   { code: "es", native: "Español" },
 ];
 
-/** Raw, validated output from the vision model. */
-export interface AIResult {
-  material: Material;
-  itemName: string;
-  confidence: number;
-  recyclable: boolean;
-  tips: string[];
-  ecoFact?: string;
-  reasoning?: string;
-}
-
 /** Enriched response the UI consumes. */
 export interface AnalysisResult {
   id: string;
   createdAt: number;
-  provider: "gemini" | "openai" | "demo";
+  provider: "team" | "demo";
   demo: boolean;
   /** AI strings are produced in the requested language. */
   itemName: string;

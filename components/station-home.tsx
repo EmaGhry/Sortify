@@ -22,7 +22,7 @@ const copy = {
       ["02", "Identifică materialul", "Modelul AI clasifică ambalajul. ESP32 primește materialul și indică destinația cu LED și servo."],
       ["03", "Verifică rezultatul", "Operatorul vede scanările, obiectele neacceptate și confirmările plăcii."],
     ],
-    materials: ["Sticlă", "Metal", "Plastic", "Hârtie și carton"],
+    materials: ["Sticlă", "Metal", "PET / plastic", "Hârtie / carton", "Altele"],
     scanner: "Scanează un obiect cu telefonul",
   },
   en: {
@@ -41,13 +41,13 @@ const copy = {
       ["02", "Identify the material", "The AI classifies the item. The ESP32 receives the material and indicates its destination with an LED and servo."],
       ["03", "Check the outcome", "The operator can review scans, rejected items, and acknowledgements from the board."],
     ],
-    materials: ["Glass", "Metal", "Plastic", "Paper and cardboard"],
+    materials: ["Glass", "Metal", "PET / plastic", "Paper / cardboard", "Other"],
     scanner: "Scan an item with your phone",
   },
 };
 
 const icons = [Camera, CircuitBoard, ClipboardList];
-const materialColors = ["#4ade80", "#f87171", "#facc15", "#60a5fa"];
+const materialColors = ["#4ade80", "#f87171", "#facc15", "#60a5fa", "#f8fafc"];
 
 export function StationHome() {
   const { lang } = useI18n();
