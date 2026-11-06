@@ -6,7 +6,8 @@ Sortify recunoaște ambalaje cu AI și alege destinația de colectare. În proto
 | --- | --- |
 | `/kiosk` | Stația pe același PC. Cameră în browser, scanare manuală sau automată, rezultat AI și confirmare ESP32. |
 | `/operator` | Ultimele 50 de scanări și totaluri din istoricul local. |
-| `/` | Scannerul web existent, cu exemple demo și analiză live prin Gemini sau OpenAI dacă este configurată. |
+| `/` | Prezentarea stației, a prototipului și a conceptului de aparat. |
+| `/scan` | Scannerul web cu exemple demo și analiză live prin Gemini sau OpenAI dacă este configurată. |
 | [Expo Android](mobile/README.md) | Clientul mobil existent pentru scannerul public. |
 
 ## Pornire rapidă pe Windows
@@ -47,7 +48,7 @@ Pentru modurile cu ESP32, conectați laptopul la rețeaua **Sortify-Bench**. Adr
 
 Pentru ONNX, rulați o dată `.\.venv\Scripts\python.exe -m station.download_model`. Scriptul descarcă și verifică un model de referință extern [WasteWise](https://huggingface.co/SriramRokkam/wastewise-garbage-cls). După instalare, inferența ONNX pe CPU poate rula offline. Pentru modelul echipei folosiți `--model <cale.onnx>` dacă exportul respectă același contract: RGB, intrare float32 `[1,3,224,224]` în [0,1], opt probabilități în ordinea `battery, biological, cardboard, glass, metal, paper, plastic, trash`. Înainte de prezentare, testați obiectele reale pe camera și lumina din sală. `--threshold` modifică pragul implicit de 0,75. Scorul modelului este util pentru filtrare. Performanța se măsoară separat pe obiecte etichetate.
 
-Pentru scannerul public porniți `npm run dev` și vizitați `/`. `.env.example` documentează cheile opționale. Exemplele demo sunt disponibile fără cheie.
+Pentru scannerul public porniți `npm run dev` și vizitați `/scan`. `.env.example` documentează cheile opționale. Exemplele demo sunt disponibile fără cheie.
 
 ## Modelul colegului prin rețea
 

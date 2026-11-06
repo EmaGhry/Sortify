@@ -1,6 +1,8 @@
 {
   "app.tagline": "Scan it. Sort it. Save the planet.",
   "nav.scan": "Szkennelés",
+  "nav.station": "Állomás",
+  "nav.operator": "Kezelő",
   "nav.history": "Előzmények",
   "nav.impact": "Hatás",
   "nav.guide": "Útmutató",

@@ -7,15 +7,24 @@ import { useI18n } from "@/lib/i18n";
 import { LOCALES } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const LINKS = [
-  { href: "/", key: "nav.scan", icon: ScanLine },
+const SCANNER_LINKS = [
+  { href: "/scan", key: "nav.scan", icon: ScanLine },
   { href: "/history", key: "nav.history", icon: History },
   { href: "/impact", key: "nav.impact", icon: Leaf },
   { href: "/guide", key: "nav.guide", icon: BookOpen },
 ];
+const LINKS = [
+  { href: "/kiosk", key: "nav.station" },
+  { href: "/operator", key: "nav.operator" },
+  ...SCANNER_LINKS,
+];
+
+function isStationPage(pathname: string) {
+  return pathname === "/" || pathname === "/kiosk" || pathname === "/operator";
+}
 
 export function Navbar() {
-  const { t, lang, setLang } = useI18n();
+  const { t } = useI18n();
   const pathname = usePathname();
 
   return (
@@ -30,13 +39,14 @@ export function Navbar() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Main">
+        <nav className="hidden items-center gap-3 md:flex lg:gap-6" aria-label="Main">
           {LINKS.map(({ href, key }) => {
             const active = pathname === href;
             return (
               <Link
                 key={href}
                 href={href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "font-mono text-[11px] uppercase tracking-[0.16em] pb-0.5 border-b-2 transition-colors",
                   active
@@ -80,6 +90,8 @@ function LanguageSwitch() {
 /** Scrolling facts strip — the editorial touch under the navbar. */
 export function Ticker() {
   const { t } = useI18n();
+  const pathname = usePathname();
+  if (isStationPage(pathname)) return null;
   const items = t("ticker.items");
 
   return (
@@ -101,6 +113,7 @@ export function Ticker() {
 export function MobileTabbar() {
   const { t } = useI18n();
   const pathname = usePathname();
+  if (isStationPage(pathname)) return null;
 
   return (
     <nav
@@ -108,12 +121,13 @@ export function MobileTabbar() {
       aria-label="Mobile"
     >
       <div className="mx-auto grid max-w-md grid-cols-4">
-        {LINKS.map(({ href, key, icon: Icon }) => {
+        {SCANNER_LINKS.map(({ href, key, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link
               key={href}
               href={href}
+              aria-current={active ? "page" : undefined}
               className={cn(
                 "flex flex-col items-center gap-1 py-2.5 font-mono text-[9px] uppercase tracking-[0.14em] transition-colors",
                 active ? "text-leaf" : "text-ink-soft",

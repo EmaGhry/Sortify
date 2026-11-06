@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Sortify — AI Recycling Assistant",
+    name: "Sortify Station",
     short_name: "Sortify",
-    description: "Scan it. Sort it. Save the planet.",
+    description: "AI recycling station with an operator panel.",
     start_url: "/",
     display: "standalone",
     background_color: "#f4f1e9",

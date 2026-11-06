@@ -1,6 +1,8 @@
 {
   "app.tagline": "Scan it. Sort it. Save the planet.",
   "nav.scan": "Scansiona",
+  "nav.station": "Stazione",
+  "nav.operator": "Operatore",
   "nav.history": "Cronologia",
   "nav.impact": "Impatto",
   "nav.guide": "Guida",

@@ -1,5 +1,5 @@
-import { ScanPageClient } from "@/components/scan/scan-page-client";
+import { StationHome } from "@/components/station-home";
 
-export default function ScanPage() {
-  return <ScanPageClient />;
+export default function HomePage() {
+  return <StationHome />;
 }
