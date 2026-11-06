@@ -20,7 +20,7 @@ const copy = {
     steps: [
       ["01", "Prezintă ambalajul", "Camera captează obiectul când stă nemișcat în zona de scanare."],
       ["02", "Identifică materialul", "Modelul AI clasifică ambalajul. ESP32 primește materialul și indică destinația cu LED și servo."],
-      ["03", "Verifică rezultatul", "Operatorul vede scanările, obiectele neacceptate și confirmările plăcii."],
+      ["03", "Verifică rezultatul", "Operatorul vede scanările, destinațiile și confirmările plăcii."],
     ],
     materials: ["Sticlă", "Metal", "PET / plastic", "Hârtie / carton", "Altele"],
     scanner: "Scanează un obiect cu telefonul",
@@ -39,7 +39,7 @@ const copy = {
     steps: [
       ["01", "Present the packaging", "The camera captures the item once it holds still in the scanning area."],
       ["02", "Identify the material", "The AI classifies the item. The ESP32 receives the material and indicates its destination with an LED and servo."],
-      ["03", "Check the outcome", "The operator can review scans, rejected items, and acknowledgements from the board."],
+      ["03", "Check the outcome", "The operator can review scans, destinations, and acknowledgements from the board."],
     ],
     materials: ["Glass", "Metal", "PET / plastic", "Paper / cardboard", "Other"],
     scanner: "Scan an item with your phone",

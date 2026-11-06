@@ -8,7 +8,8 @@ const materials = {
   metal: "Metal",
   plastic: "PET / plastic",
   paper: "Hârtie / carton",
-  reject: "Altele",
+  other: "Altele",
+  reject: "Respins (istoric)",
 };
 const acknowledgements = {
   acknowledged: "Comandă confirmată",
@@ -24,7 +25,7 @@ type Event = {
   hardware: keyof typeof acknowledgements;
 };
 type Snapshot = {
-  summary: { total: number; previews: number; rejected: number; unconfirmed: number; acknowledged: number } | null;
+  summary: { total: number; previews: number; other: number; unconfirmed: number; acknowledged: number } | null;
   events: Event[];
 };
 const timeFormat = new Intl.DateTimeFormat("ro-RO", { dateStyle: "short", timeStyle: "medium" });
@@ -77,7 +78,7 @@ export function StationHistory() {
               ["Scanări AI", summary.total],
               ["Comenzi confirmate", summary.acknowledged],
               ["Comenzi neconfirmate", summary.unconfirmed],
-              ["Obiecte neacceptate", summary.rejected],
+              ["Destinația Altele", summary.other],
               ["Previzualizări", summary.previews],
             ].map(([label, value]) => (
               <div key={label} className="border border-white/25 p-3">

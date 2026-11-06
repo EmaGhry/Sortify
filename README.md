@@ -1,8 +1,8 @@
 # Sortify · ByteForce
 
-Sortify este un prototip de stație pentru cantine și zone de pauză. Camera scanează un obiect, modelul echipei identifică materialul, iar ESP32 primește categoria prin Wi‑Fi. Placa aprinde LED-ul corespunzător și servo-ul indică destinația pe unul dintre cele patru cartonașe. Pentru **Altele**, se aprinde LED-ul alb, iar servo-ul rămâne pe loc.
+Sortify este un prototip de stație pentru cantine și zone de pauză. Camera scanează un obiect, modelul echipei identifică materialul, iar ESP32 primește categoria prin Wi‑Fi. Placa aprinde LED-ul corespunzător și servo-ul indică destinația pe unul dintre cele cinci cartonașe. Pentru **Altele**, se aprinde LED-ul alb, iar servo-ul indică poziția dedicată.
 
-Pentru prezentare, porniți de la montajul cu care ați verificat deja traseul **cameră → model → ESP32**. Carcasa, jgheabul și cele patru compartimente sunt prezentate separat ca **[proiect pentru aparatul final](docs/SORTIFY-STATION-PLAN.md)**.
+Pentru prezentare, porniți de la montajul cu care ați verificat deja traseul **cameră → model → ESP32**. Carcasa, jgheabul și cele cinci compartimente sunt prezentate separat ca **[proiect pentru aparatul final](docs/SORTIFY-STATION-PLAN.md)**.
 
 | Interfață | Rol |
 | --- | --- |
@@ -105,14 +105,14 @@ Testul de ieșiri cere Enter înainte de fiecare comandă. Calibrați servo-ul f
 
 Semnalul servo este pe GPIO 13. Verificați continuitatea și polaritatea LED-urilor în montaj. Profilul folosește LED-uri active HIGH, cu anodul către GPIO și rezistența spre masă. Alimentați servo-ul separat conform fișei lui, cu masă comună. Păstrați plusul sursei servo separat de alimentarea plăcii. [Ghid ESP32 DevKitC](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32/esp-dev-kits-en-master-esp32.pdf) · [TowerPro SG90](https://towerpro.com.tw/product/sg90-analog/)
 
-ESP32 creează propriul Wi-Fi cu parolă și primește `GET /sort?type=plastic`, cu headerul `X-Sortify-Bench: 1`. Valorile sunt `glass`, `metal`, `plastic`, `paper` și `other`. Placa răspunde, de exemplu, cu `{"material":"plastic"}` după ce setează ieșirile. `other` aprinde albul și lasă poziția servo neschimbată. Confirmarea dovedește că firmware-ul a aplicat comanda. Mișcarea săgeții se verifică vizual.
+ESP32 creează propriul Wi-Fi cu parolă și primește `GET /sort?type=plastic`, cu headerul `X-Sortify-Bench: 1`. Valorile sunt `glass`, `metal`, `plastic`, `paper` și `other`. Placa răspunde, de exemplu, cu `{"material":"plastic"}` după ce setează ieșirile. Firmware-ul v2 raportează `"version":2` la `/health` și are o poziție servo pentru **Altele**. Încărcați v2 pe placa folosită la demo și verificați poziția nouă cu `python -m station.esp_link`. Confirmarea dovedește că firmware-ul a aplicat comanda. Mișcarea săgeții se verifică vizual.
 
 ## Demo pentru juriu
 
-1. Așezați patru cartonașe în dreptul pozițiilor calibrate și deschideți kiosk-ul.
+1. Așezați cinci cartonașe în dreptul pozițiilor calibrate și deschideți kiosk-ul.
 2. Fixați camera spre un fundal simplu și porniți-o. Goliți cadrul și apăsați **Calibrează cu zona goală**. În modul hardware, kiosk-ul verifică mai întâi că ESP32 răspunde.
 3. Când apare **Pregătit**, apăsați **Mod prezentare**. Rugați un jurat să aleagă între două ambalaje testate și să-l țină nemișcat în centru. Arătați rezultatul, LED-ul și săgeata. Retrageți obiectul complet și așteptați din nou **Prezintă ambalajul** înainte de al doilea. **Configurare** sau Escape readuce panoul cu camera și calibrarea.
-4. Folosiți un exemplu verificat în prealabil pentru **Altele**. LED-ul alb se aprinde și săgeata rămâne pe loc.
+4. Folosiți un exemplu verificat în prealabil pentru **Altele**. LED-ul alb se aprinde și săgeata indică al cincilea cartonaș.
 5. Arătați [istoricul operatorului](http://127.0.0.1:3000/operator) și randarea cu eticheta **Conceptul aparatului final**. Păstrați un clip al unei rulări reale pentru situația în care montajul are probleme în sală.
 
 Folosiți lumină constantă și o singură filă cu camera. Detectarea prezenței se bazează pe diferența față de cadrul gol. Recalibrați dacă schimbați camera, poziția sau lumina. **Scanează obiectul** rămâne disponibil după oprirea automatizării. La eroare de model, comandă neconfirmată, cameră deconectată sau filă ascunsă, automatizarea se oprește și se rearmează manual.

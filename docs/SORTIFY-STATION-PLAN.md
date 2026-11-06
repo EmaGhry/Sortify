@@ -6,12 +6,12 @@ Plan de lucru pentru prototip. Starea implementării se verifică în repo și �
 
 ## 1. Produsul și limita MVP-ului
 
-**Sortify este un automat cu o singură gură de introducere și patru compartimente de colectare.** Persoana introduce un ambalaj pe rând. Camera internă îl vede în zona de scanare, modelul local recunoaște obiectul, iar ESP32 comandă un mecanism care îl direcționează spre compartiment. Ecranul arată ce se întâmplă și ce trebuie să facă utilizatorul dacă obiectul nu poate fi acceptat.
+**Sortify este un automat cu o singură gură de introducere și cinci compartimente de colectare.** Persoana introduce un obiect pe rând. Camera internă îl vede în zona de scanare, modelul local recunoaște obiectul, iar ESP32 comandă un mecanism care îl direcționează spre compartiment. Ecranul arată destinația sau indică o eroare de funcționare.
 
-- **Prima locație** · zona de returnare a tăvilor dintr-o singură cantină. Administratorul locației este cumpărătorul ipotetic, iar personalul cantinei verifică și golește compartimentele. Pilotul urmărește câte ambalaje acceptate ajung unde trebuie, câte obiecte sunt refuzate și câtă intervenție necesită stația.
+- **Prima locație** · zona de returnare a tăvilor dintr-o singură cantină. Administratorul locației este cumpărătorul ipotetic, iar personalul cantinei verifică și golește compartimentele. Pilotul urmărește câte obiecte ajung unde trebuie, câte ajung la Altele și câtă intervenție necesită stația.
 - **Obiecte de demo** · ambalaje goale, uscate, încadrate în dimensiunile și greutatea testate. Începem cu câteva forme cunoscute pentru fiecare destinație. Folosim sticlă reală doar după ce traseul și recipientul rezistă la cădere fără spargere. Până atunci, testăm recunoașterea separat și marcăm clar orice substitut folosit pentru mecanică.
-- **Patru destinații fizice** · `glass`, `metal`, `plastic`, `paper`. `reject` înseamnă că stația păstrează obiectul accesibil utilizatorului și cere retragerea lui. `empty` este o observație a modelului. Niciuna dintre aceste stări nu are compartiment propriu.
-- **Model și reguli** · modelul identifică obiectul vizibil. O configurație locală stabilește dacă acel tip de obiect e acceptat și în ce compartiment merge. Un pahar cu material neclar sau ambalaj cu resturi vizibile poate fi refuzat. Regulile unei cantine se validează cu administratorul și colectorul înainte de pilot.
+- **Cinci destinații fizice** · `glass`, `metal`, `plastic`, `paper` și `other`. Altele are LED alb și poziție dedicată.
+- **Model și reguli** · modelul identifică obiectul vizibil. Predicția `other` și predicțiile sub prag sunt direcționate la Altele. Regulile unei cantine se validează cu administratorul și colectorul înainte de pilot.
 - **Interfețe** · ecranul automatului este interfața principală. Un portal simplu pentru operator vine după ce traseul fizic funcționează. QR-ul și scanarea publică existentă sunt extensii. Conturile pe companii, rapoartele PDF, fluxul video, jocul, voucherele și marketplace-ul rămân în backlog.
 
 ## 2. Ce folosim din repo și din Word
@@ -29,7 +29,7 @@ Plan de lucru pentru prototip. Starea implementării se verifică în repo și �
 
 | Funcție | Etichetă în schemă | Folosire propusă |
 | --- | --- | --- |
-| LED alb | D33 | Stare/atenție. Interfața spune dacă se scanează sau trebuie retras obiectul. |
+| LED alb | D33 | Altele |
 | LED verde | D25 | Sticlă |
 | LED roșu | D26 | Metal |
 | LED galben | D27 | Plastic |
@@ -46,7 +46,7 @@ Alimentați placa prin USB și servo-urile de la o sursă externă stabilizată,
 **Mecanica minimă**
 
 1. O tavă sau clapetă ține un obiect într-o zonă cu lumină fixă. Intrarea îl lasă accesibil până la eliberare și ține mâna departe de servo și jgheab. Testați fizic poziția la pornire și la pierderea alimentării. O comandă software de închidere nu poate ține singură obiectul dacă actuatorul rămâne fără curent.
-2. Jgheabul se aliniază pe unul dintre patru canale. Calibrați cele patru poziții pe ansamblul real, pornind cu mișcări scurte și fără obiect. Dimensionați servo-ul după pârghie și sarcină. SG90 se validează întâi pentru un jgheab ușor.
+2. Jgheabul se aliniază pe unul dintre cele cinci canale. Calibrați pozițiile pe ansamblul real, pornind cu mișcări scurte și fără obiect. Dimensionați servo-ul după pârghie și sarcină. SG90 se validează întâi pentru un jgheab ușor.
 3. Clapeta eliberează obiectul doar după aliniere. Un senzor de prezență declanșează ciclul, iar un senzor opțional pe traseu confirmă trecerea. Confirmarea compartimentului exact necesită senzor pe destinație sau observație manuală. Un singur servo poate demonstra selectorul cu eliberare manuală. Etichetați acel mod ca **demo asistat** până verificați mecanismul automat complet.
 4. Testați pe rând alimentarea, LED-urile, servo-urile fără sarcină, opritoarele, apoi căderea către fiecare recipient. După fiecare blocaj, operatorul oprește alimentarea actuatorului înainte de a umbla în mecanism. Țineți pentru demo un set de obiecte care a trecut deja testul fizic.
 
@@ -72,8 +72,8 @@ Camera USB → agent Python pe PC → modelul echipei → regulile stației
 ### Ciclul și tratarea erorilor
 
 1. ESP32 pornește cu eliberarea blocată și trimite `READY` după verificarea stării inițiale. Ecranul afișează **„Introdu un obiect”** când agentul vede camera, modelul, serialul și tava liberă.
-2. Senzorul detectează obiectul, firmware-ul emite `OBJ` și păstrează tava blocată. Agentul rulează detecția locală, apoi trimite o destinație validă sau `REJECT`.
-3. Pentru o destinație validă, ESP32 aliniază jgheabul, așteaptă timpul calibrat, eliberează, închide și verifică dacă tava este liberă. LED-ul indică destinația. Pentru `REJECT`, ecranul cere retragerea obiectului și ciclul rămâne blocat până când tava este liberă.
+2. Senzorul detectează obiectul, firmware-ul emite `OBJ` și păstrează tava blocată. Agentul rulează detecția locală, apoi trimite una dintre cele cinci destinații.
+3. ESP32 aliniază jgheabul, așteaptă timpul calibrat, eliberează, închide și verifică dacă tava este liberă. LED-ul indică destinația, inclusiv alb pentru Altele.
 4. Dacă expiră timpul, cade legătura sau obiectul rămâne în mecanism, opriți ciclul și afișați starea. Dacă o întrerupere are loc după ce eliberarea a început, marcați rezultatul ca neconfirmat și cereți verificare înaintea următorului ciclu. Reconectarea nu reexecută o comandă veche.
 
 ### Contract serial propus
@@ -84,43 +84,42 @@ USB, 115200 baud, mesaje ASCII terminate cu newline, un singur obiect activ. `cy
 | --- | --- | --- |
 | ESP32 → PC | `READY <session_id>` | Firmware pregătit. Agentul poate trata sesiunile schimbate ca reset. |
 | ESP32 → PC | `OBJ <cycle_id>` | Senzorul a declanșat ciclul. |
-| PC → ESP32 | `CLS <cycle_id> <glass|metal|plastic|paper>` | Destinație validă pentru ciclul curent. |
-| PC → ESP32 | `REJECT <cycle_id> <reason>` | Păstrează obiectul pe tavă și așteaptă retragerea. |
+| PC → ESP32 | `CLS <cycle_id> <material>` | Una dintre cele cinci destinații pentru ciclul curent. |
 | ESP32 → PC | `DONE <cycle_id> <pass_detected|unverified>` | Secvența mecanică s-a terminat. Tipul spune dacă un senzor a observat trecerea. |
-| ESP32 → PC | `REJECTED <cycle_id> <reason>` / `ERR <cycle_id> <code>` | Refuz finalizat după retragere sau eroare care trebuie tratată. |
+| ESP32 → PC | `ERR <cycle_id> <code>` | Eroare de ciclu care trebuie tratată. |
 
 Pentru fiecare ID, agentul salvează cel mult un rezultat final. Stocați clasa prezisă, scorul, destinația, starea, eventualul rezultat observat manual, timpii, versiunea modelului și sursa `live`/`sim`. În caz de serial deconectat, starea de mișcare e indisponibilă până la resincronizare. Dacă SQLite sau UI se opresc, agentul păstrează controlul ciclului și semnalizează pierderea telemetriei. Pentru demo, datele simulate sunt separate și au banner vizibil. Simulatorul nu poate comanda portul serial.
 
 ### Ecranele și indicatorii
 
-- `/kiosk` · fullscreen. Stările sunt **Pregătit**, **Se scanează**, **Se sortează**, **Retrage obiectul** și **Stație indisponibilă**. Text mare și iconuri. Mesajul folosește denumirea materialului împreună cu culoarea. Camera este orientată spre tavă, iar pentru MVP agentul procesează cadrele în memorie.
+- `/kiosk` · fullscreen. Stările sunt **Pregătit**, **Se scanează**, **Se sortează** și **Stație indisponibilă**. Text mare și iconuri. Mesajul folosește denumirea materialului împreună cu culoarea. Camera este orientată spre tavă, iar pentru MVP agentul procesează cadrele în memorie.
 - `/operator` · o stație, starea curentă, lista de evenimente, filtre, confirmare/corectare și export CSV. Agentul poate publica heartbeat la 5 s, iar UI poate marca stația indisponibilă după 15 s fără heartbeat. Heartbeat-ul funcționează și în repaus. Valorile sunt praguri inițiale configurabile.
-- **Rată de rutare automată** = cicluri cu rutare executată / cicluri reale inițiate. Afișați separat câte treceri au fost confirmate de senzor, câte au fost refuzate și câte au avut eroare. **Acuratețe de clasificare** = predicții corecte / obiecte cu etichetă verificată. **Corectitudinea sortării fizice** se măsoară prin destinația observată, inclusiv dacă obiectul nu a ajuns nicăieri. Pentru fiecare procent afișați și numitorul. Comparați cu sortarea manuală doar pe probe și criterii comparabile. Cântărirea și raportarea în kg intră după măsurare.
+- **Rată de rutare automată** = cicluri cu rutare executată / cicluri reale inițiate. Afișați separat câte treceri au fost confirmate de senzor, câte au mers la Altele și câte au avut eroare. **Acuratețe de clasificare** = predicții corecte / obiecte cu etichetă verificată. **Corectitudinea sortării fizice** se măsoară prin destinația observată, inclusiv dacă obiectul nu a ajuns nicăieri. Pentru fiecare procent afișați și numitorul. Comparați cu sortarea manuală doar pe probe și criterii comparabile. Cântărirea și raportarea în kg intră după măsurare.
 
 ## 5. Ordinea de implementare și criteriile de trecere
 
 | Fază | Livrabil | Condiție de trecere |
 | --- | --- | --- |
-| 0. Fixăm contractul | Poză cu placa exactă, schemă corectată, BOM cu piese existente/lipsă, desenul traseului, patru destinații, setul de obiecte, protocolul. | Echipa confirmă cum rămâne obiectul pe tavă și cum îl retrage utilizatorul. |
-| 1. Mișcare | Firmware cu LED, poziții calibrate și test controlat al mecanismului. Agentul simulat poate lucra în paralel pentru UI. | Patru trasee testate manual, zece repetări pe fiecare cu obiecte din setul de banc. Orice blocaj se notează și se remediază. |
-| 2. Lanț pe USB | Senzor, agent cu rezultate deterministe de test, ESP32 și tava. Rezultatul de test comandă hardware doar în modul de banc armat explicit. | Testați succes, refuz, timeout, ID duplicat, obiect neretras, restart PC/ESP și deconectare. Un ciclu invalid nu eliberează un obiect. |
+| 0. Fixăm contractul | Poză cu placa exactă, schemă corectată, BOM cu piese existente/lipsă, desenul traseului, cinci destinații, setul de obiecte, protocolul. | Echipa confirmă cum rămâne obiectul pe tavă până la eliberare. |
+| 1. Mișcare | Firmware cu LED, poziții calibrate și test controlat al mecanismului. Agentul simulat poate lucra în paralel pentru UI. | Cinci trasee testate manual, zece repetări pe fiecare cu obiecte din setul de banc. Orice blocaj se notează și se remediază. |
+| 2. Lanț pe USB | Senzor, agent cu rezultate deterministe de test, ESP32 și tava. Rezultatul de test comandă hardware doar în modul de banc armat explicit. | Testați rutarea la fiecare destinație, timeout, ID duplicat, obiect blocat, restart PC/ESP și deconectare. Un ciclu invalid nu eliberează un obiect. |
 | 3. AI real și kiosk | Model local pe PC, configurare, UI, stare și log. Colectarea imaginilor începe de la faza 0, pe camera și în lumina reală. | Modelul este evaluat pe obiecte fizice diferite de cele din antrenare. Kiosk-ul vede evenimente reale, cu internetul oprit. |
-| 4. Repetiție | Un scenariu live, instrucțiuni de pornire/calibrare și măsurători. | Rulați 40 de obiecte acceptate, 10 pe clasă, și 10 probe necunoscute sau neacceptate. Păstrați rezultatele pe clasă și motivul fiecărui eșec. |
+| 4. Repetiție | Un scenariu live, instrucțiuni de pornire/calibrare și măsurători. | Rulați 50 de obiecte, 10 pe categorie. Păstrați rezultatele pe categorie și motivul fiecărui eșec. |
 | 5. Operator și pilot | Istoric persistent, corecții, export, apoi test într-o cantină. | Personalul poate prelua, verifica și goli compartimentele. Comparați sortarea cu o probă manuală și notați durata, erorile și intervențiile. |
 
-**Ținte propuse, de măsurat** · cel puțin 34 din 40 de obiecte acceptate în compartimentul corect, toate cele 10 obiecte din setul de refuz recuperabile fără rutare și p95 sub 3 s de la detectare la terminarea ciclului mecanic pentru obiectele rutate. Raportați rata de refuz inclusiv pentru obiectele acceptate și separați latența modelului de latența întregului ciclu. Scrieți rezultatele reale, chiar dacă o țintă este ratată. Orice video de rezervă trebuie să arate o rulare reală și să fie prezentat ca înregistrare.
+**Ținte propuse, de măsurat** · cel puțin 34 din 40 de obiecte din cele patru categorii de reciclabile în compartimentul corect, toate cele 10 probe din categoria Altele în compartimentul lor și p95 sub 3 s de la detectare la terminarea ciclului mecanic pentru obiectele rutate. Raportați separat câte reciclabile au mers la Altele și separați latența modelului de latența întregului ciclu. Scrieți rezultatele reale, chiar dacă o țintă este ratată. Orice video de rezervă trebuie să arate o rulare reală și să fie prezentat ca înregistrare.
 
-Pentru model, separați seturile după **obiect fizic**, nu după cadru. Includeți rotiri, obiecte deformate, cadre goale și obiecte care trebuie refuzate. Fixați versiunea modelului și ordinea claselor, dimensiunea și normalizarea imaginii. Calibrați pragurile pe validare. Folosiți setul de test la final și păstrați matricea de confuzie și rata de acceptare a obiectelor neeligibile.
+Pentru model, separați seturile după **obiect fizic**, nu după cadru. Includeți rotiri, obiecte deformate, cadre goale și obiecte din categoria Altele. Fixați versiunea modelului și ordinea claselor, dimensiunea și normalizarea imaginii. Calibrați pragurile pe validare. Folosiți setul de test la final și păstrați matricea de confuzie pentru cele cinci destinații.
 
 ## 6. README și fișierele din Git
 
 README-ul public poate începe astfel, cu starea actualizată odată cu fiecare livrare:
 
-> **Sortify Station** este un prototip de automat care recunoaște ambalaje cu o cameră și le direcționează în patru compartimente cu un ESP32. Recunoașterea stației este proiectată să ruleze local pe PC. Repo-ul conține în prezent scannerul web Next.js și clientul Expo. Stația fizică și integrarea locală sunt descrise în planul de implementare.
+> **Sortify Station** este un prototip de automat care recunoaște ambalaje cu o cameră și indică una dintre cele cinci destinații cu un ESP32. Modelul echipei rulează local. Aparatul complet ar direcționa obiectul în compartimentul indicat.
 
 Sub descriere, adăugați în această ordine:
 
-1. **Demo și stare** · o poză sau un clip real, cele patru destinații și un tabel „implementat / planificat”. Menționați în mod explicit când datele sunt simulate sau eliberarea e manuală.
+1. **Demo și stare** · o poză sau un clip real, cele cinci destinații și un tabel „implementat / planificat”. Menționați în mod explicit când datele sunt simulate sau eliberarea e manuală.
 2. **Pornirea proiectului** · `npm ci`, apoi `npm run dev` și `http://localhost:3000`. README documentează exemplele demo și conectarea modelului echipei pentru clasificare.
 3. **Pornirea stației** · după implementare, listați versiunile testate de Node, Python, PlatformIO și model, comenzile pentru flash și pornire, camera, portul COM, modelul și comanda simulatorului. Ordinea recomandată este alimentare și calibrare, agent, apoi Next și `/kiosk`. Link separat către schema și pașii de verificare de banc.
 4. **Verificare și depanare** · `npm run build`, `npm run i18n:validate`, compilarea firmware-ului, testele stației și lista de verificare fizică. Includeți camera ocupată, COM greșit, model incompatibil, ESP32 resetat, servo blocat și diferența între „trecere detectată” și „destinație verificată”.
@@ -157,6 +156,6 @@ Urmăriți în Git codul, `platformio.ini`, lockfile-urile, fișierele `*.exampl
 
 - Modelul exact de ESP32 și fișierul KiCad original, polaritatea LED-urilor, legătura D13 și tensiunea de alimentare sub sarcină.
 - Mecanismul real pentru reținere și retragere, al doilea servo, tipul senzorului de prezență și eventuala confirmare a trecerii.
-- Dimensiunea și masa acceptate, schema fizică a celor patru ieșiri și setul sigur pentru demo.
+- Dimensiunea și masa acceptate, schema fizică a celor cinci ieșiri și setul sigur pentru demo.
 - Laptopul, camera și versiunea exportată a modelului. Ținta de latență și pragurile se validează pe acel ansamblu.
 - Cine este prima cantină sau locație pilot și cine confirmă regulile pentru fiecare ambalaj.

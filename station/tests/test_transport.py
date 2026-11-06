@@ -14,6 +14,7 @@ class StationTransportTests(unittest.TestCase):
         self.requests = []
         self.prediction = {"label": "paper", "score": 0.93}
         self.board_reply = None
+        self.firmware_version = 2
         test = self
 
         class Peer(BaseHTTPRequestHandler):
@@ -32,6 +33,9 @@ class StationTransportTests(unittest.TestCase):
 
             def do_GET(self):
                 test.requests.append((self.path, self.headers.get("X-Sortify-Bench")))
+                if self.path == "/health":
+                    self.reply({"station": "sortify-bench", "version": test.firmware_version})
+                    return
                 material = self.path.rsplit("=", 1)[-1]
                 self.reply(test.board_reply or {"material": material})
 
@@ -54,11 +58,24 @@ class StationTransportTests(unittest.TestCase):
         self.assertEqual(result["hardware"], "acknowledged")
         self.assertEqual(result["model_source"], "network")
 
-    def test_below_threshold_uses_white_led_command(self):
+    def test_below_threshold_routes_to_other(self):
         self.prediction = {"label": "glass", "score": 0.4}
         result = self.station.scan("image/jpeg", b"frame")
-        self.assertEqual(result["destination"], "reject")
+        self.assertEqual(result["destination"], "other")
+        self.assertEqual(result["hardware"], "acknowledged")
         self.assertEqual(self.requests[-1], ("/sort?type=other", "1"))
+
+    def test_explicit_other_routes_to_its_compartment(self):
+        self.prediction = {"label": "other", "score": 0.9}
+        result = self.station.scan("image/jpeg", b"frame")
+        self.assertEqual(result["destination"], "other")
+        self.assertEqual(self.requests[-1], ("/sort?type=other", "1"))
+
+    def test_old_firmware_cannot_acknowledge_other_as_a_destination(self):
+        self.firmware_version = 1
+        with self.assertRaisesRegex(BoardError, "firmware v2"):
+            self.board.indicate("other")
+        self.assertEqual(self.requests, [("/health", "1")])
 
     def test_model_error_does_not_trigger_hardware(self):
         self.prediction = {"label": "plastic", "score": "high"}

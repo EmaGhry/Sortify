@@ -45,7 +45,7 @@ class History:
             summary = connection.execute("""
                 SELECT count(*) AS total,
                        count(CASE WHEN mode = 'preview' THEN 1 END) AS previews,
-                       count(CASE WHEN destination = 'reject' THEN 1 END) AS rejected,
+                       count(CASE WHEN destination = 'other' THEN 1 END) AS other,
                        count(CASE WHEN hardware = 'unconfirmed' THEN 1 END) AS unconfirmed,
                        count(CASE WHEN hardware = 'acknowledged' THEN 1 END) AS acknowledged
                 FROM scans

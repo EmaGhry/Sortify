@@ -38,14 +38,15 @@ class Board:
             connection.close()
 
     def check(self):
-        if self._request("/health") != {"station": "sortify-bench", "version": 1}:
-            raise BoardError("The device did not report the expected Sortify firmware.")
+        if self._request("/health") != {"station": "sortify-bench", "version": 2}:
+            raise BoardError("ESP32 needs Sortify firmware v2 to route all five materials.")
 
     def indicate(self, destination: str):
         if destination not in DESTINATIONS:
             raise ValueError("Invalid destination")
-        material = "other" if destination == "reject" else destination
-        if self._request("/sort?" + urlencode({"type": material})) != {"material": material}:
+        if destination == "other":
+            self.check()
+        if self._request("/sort?" + urlencode({"type": destination})) != {"material": destination}:
             raise BoardError("ESP32 did not confirm the requested material.")
 
 

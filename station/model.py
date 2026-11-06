@@ -6,8 +6,7 @@ from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
 
-DESTINATIONS = ("glass", "metal", "plastic", "paper", "reject")
-LABELS = ("glass", "metal", "plastic", "paper", "other")
+DESTINATIONS = ("glass", "metal", "plastic", "paper", "other")
 
 
 @dataclass(frozen=True)
@@ -22,7 +21,7 @@ class ModelUnavailable(RuntimeError):
 
 
 def route(label: str, score: float, threshold: float) -> Prediction:
-    destination = label if label != "other" and score >= threshold else "reject"
+    destination = label if score >= threshold else "other"
     return Prediction(label, destination, round(score, 4))
 
 
@@ -59,7 +58,7 @@ class HttpClassifier:
                 raise ValueError("Expected a JSON object")
             label, score = result.get("label"), result.get("score")
             if (
-                label not in LABELS
+                label not in DESTINATIONS
                 or type(score) not in (int, float)
                 or not 0 <= score <= 1
                 or not isfinite(score)

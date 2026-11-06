@@ -9,10 +9,10 @@ const materials = {
   metal: "METAL",
   plastic: "PLASTIC",
   paper: "PAPER",
-  reject: "OTHER",
+  other: "OTHER",
 } as const;
 const predictionSchema = z.object({
-  destination: z.enum(["glass", "metal", "plastic", "paper", "reject"]),
+  destination: z.enum(["glass", "metal", "plastic", "paper", "other"]),
   score: z.number().min(0).max(1),
 });
 

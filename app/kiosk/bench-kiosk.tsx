@@ -10,7 +10,7 @@ const destinations = {
   metal: { name: "Metal", color: "#f87171", led: "roșu" },
   plastic: { name: "PET / plastic", color: "#facc15", led: "galben" },
   paper: { name: "Hârtie / carton", color: "#60a5fa", led: "albastru" },
-  reject: { name: "Altele", color: "#f8fafc", led: "alb" },
+  other: { name: "Altele", color: "#f8fafc", led: "alb" },
 } as const;
 
 const labels: Record<string, string> = {
@@ -186,8 +186,9 @@ export function BenchKiosk() {
       setChecking(true);
       try {
         const response = await fetch("/api/bench?view=hardware", { cache: "no-store" });
-        if (!response.ok || !(await response.json()).ready) {
-          throw new Error("ESP32 nu răspunde. Verifică dacă laptopul este conectat la Sortify-Bench.");
+        const data = await response.json();
+        if (!response.ok || !data.ready) {
+          throw new Error(data.error ?? "Verifică rețeaua Sortify-Bench și firmware-ul ESP32.");
         }
       } catch (cause) {
         if (mounted.current) setError(cause instanceof Error ? cause.message : "ESP32 nu răspunde.");
@@ -275,11 +276,11 @@ export function BenchKiosk() {
     presentation = { title: "Ține ambalajul nemișcat", detail: "Camera se pregătește să-l scaneze.", kind: "scanning" };
   } else if (result && choice && automatic !== "ready") {
     const indication = simulated ? "LED simulat" : result.hardware === "acknowledged" ? "LED" : "";
-    const next = result.destination === "reject" ? "Retrage obiectul." : "Eliberează zona de scanare.";
+    const next = "Eliberează zona de scanare.";
     presentation = {
       title: choice.name,
       detail: indication ? `${indication} ${choice.led} · ${next}` : next,
-      kind: result.destination === "reject" ? "attention" : "result",
+      kind: "result",
       color: choice.color,
     };
   } else if (!station || (!simulated && !autoActive)) {

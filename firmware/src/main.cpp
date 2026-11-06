@@ -28,6 +28,7 @@ constexpr Destination destinations[] = {
     {"metal", 26, 1350},
     {"plastic", 27, 1600},
     {"paper", 14, 1850},
+    {"other", attentionLed, 2000},
 };
 
 WebServer server(80);
@@ -35,7 +36,6 @@ bool apReady = false;
 bool servoAttached = false;
 
 void indicate(uint8_t selectedLed) {
-  digitalWrite(attentionLed, selectedLed == attentionLed ? HIGH : LOW);
   for (const auto &destination : destinations) {
     digitalWrite(destination.led, selectedLed == destination.led ? HIGH : LOW);
   }
@@ -63,27 +63,20 @@ void handleSort() {
   }
 
   const String material = server.arg("type");
-  if (material == "other") {
-    indicate(attentionLed);
-  } else {
-    const Destination *selected = nullptr;
-    for (const auto &destination : destinations) {
-      if (material == destination.name) selected = &destination;
-    }
-    if (!selected) {
-      server.send(400, "application/json", "{\"error\":\"invalid material\"}");
+  for (const auto &destination : destinations) {
+    if (material == destination.name) {
+      movePointer(destination.pulseMicros);
+      indicate(destination.led);
+      server.send(200, "application/json", String("{\"material\":\"") + material + "\"}");
       return;
     }
-    movePointer(selected->pulseMicros);
-    indicate(selected->led);
   }
-  server.send(200, "application/json", String("{\"material\":\"") + material + "\"}");
+  server.send(400, "application/json", "{\"error\":\"invalid material\"}");
 }
 }  // namespace
 
 void setup() {
   Serial.begin(115200);
-  pinMode(attentionLed, OUTPUT);
   for (const auto &destination : destinations) pinMode(destination.led, OUTPUT);
   indicate(attentionLed);
   ledcSetup(servoChannel, servoFrequency, servoResolution);
@@ -100,7 +93,7 @@ void setup() {
   server.collectHeaders(headers, 1);
   server.on("/health", HTTP_GET, []() {
     server.sendHeader("Cache-Control", "no-store");
-    server.send(200, "application/json", "{\"station\":\"sortify-bench\",\"version\":1}");
+    server.send(200, "application/json", "{\"station\":\"sortify-bench\",\"version\":2}");
   });
   server.on("/sort", HTTP_GET, handleSort);
   server.begin();
