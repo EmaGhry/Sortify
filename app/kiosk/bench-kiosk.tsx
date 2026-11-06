@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { observePresence, startPresence, type PresenceState } from "./presence";
 
 const destinations = {
   glass: { name: "Sticlă", color: "#4ade80", led: "verde" },
@@ -38,15 +39,27 @@ type Result = StationStatus & {
   error: string | null;
 };
 
+const automaticMessages = {
+  calibrating: "Lasă zona goală. Se calibrează camera…",
+  ready: "Pregătit. Așază un obiect în centrul cadrului.",
+  steady: "Ține obiectul nemișcat…",
+  remove: "Retrage obiectul pentru următoarea scanare.",
+} as const;
+
+function drawSquare(video: HTMLVideoElement, context: CanvasRenderingContext2D, size: number) {
+  const side = Math.min(video.videoWidth, video.videoHeight);
+  if (!side) throw new Error("Așteaptă pornirea camerei.");
+  context.drawImage(video, (video.videoWidth - side) / 2, (video.videoHeight - side) / 2,
+    side, side, 0, 0, size, size);
+}
+
 function captureFrame(video: HTMLVideoElement) {
   const canvas = document.createElement("canvas");
-  const side = Math.min(video.videoWidth, video.videoHeight);
   canvas.width = 480;
   canvas.height = 480;
   const context = canvas.getContext("2d");
-  if (!context || !side) throw new Error("Așteaptă pornirea camerei.");
-  context.drawImage(video, (video.videoWidth - side) / 2, (video.videoHeight - side) / 2,
-    side, side, 0, 0, 480, 480);
+  if (!context) throw new Error("Cadrul nu a putut fi capturat.");
+  drawSquare(video, context, 480);
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);
@@ -66,6 +79,8 @@ export function BenchKiosk() {
   const [camera, setCamera] = useState<"off" | "starting" | "on">("off");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [automatic, setAutomatic] = useState<PresenceState["phase"] | null>(null);
+  const autoActive = automatic !== null;
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -107,6 +122,13 @@ export function BenchKiosk() {
       }
       stream.current = next;
       video.current.srcObject = next;
+      next.getVideoTracks()[0]?.addEventListener("ended", () => {
+        if (!mounted.current || stream.current !== next) return;
+        stream.current = null;
+        setAutomatic(null);
+        setCamera("off");
+        setError("Camera s-a deconectat. Reconecteaz-o și pornește-o din nou.");
+      }, { once: true });
       await video.current.play();
       setCamera("on");
     } catch {
@@ -117,8 +139,8 @@ export function BenchKiosk() {
     }
   }
 
-  async function scan(example?: Destination) {
-    if (scanLock.current) return;
+  const scan = useCallback(async (example?: Destination) => {
+    if (scanLock.current) return false;
     scanLock.current = true;
     setBusy(true);
     setResult(null);
@@ -139,13 +161,50 @@ export function BenchKiosk() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
       setResult(data);
+      return data.hardware !== "unconfirmed";
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Scanarea nu a putut fi terminată.");
+      return false;
     } finally {
       scanLock.current = false;
       setBusy(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    if (!autoActive || camera !== "on" || station?.mode === "simulation") return;
+    const sample = document.createElement("canvas");
+    sample.width = sample.height = 32;
+    const context = sample.getContext("2d", { willReadFrequently: true });
+    if (!context) return;
+    let presence = startPresence();
+    let lastTime = -1;
+    let stopped = false;
+    const timer = window.setInterval(() => {
+      const element = video.current;
+      if (stopped || scanLock.current || !element || element.readyState < 2 || element.currentTime === lastTime) return;
+      lastTime = element.currentTime;
+      drawSquare(element, context, 32);
+      const step = observePresence(presence, context.getImageData(0, 0, 32, 32).data);
+      presence = step.state;
+      setAutomatic(presence.phase);
+      if (step.scan) void scan().then((ok) => {
+        if (!ok && !stopped) setAutomatic(null);
+      });
+    }, 125);
+    function onVisibility() {
+      if (document.hidden) {
+        stopped = true;
+        setAutomatic(null);
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [autoActive, camera, scan, station?.mode]);
 
   const choice = result ? destinations[result.destination] : null;
   const button = "border border-white/25 px-4 py-3 text-sm font-bold hover:bg-white/10 disabled:opacity-40";
@@ -154,7 +213,7 @@ export function BenchKiosk() {
     <section ref={stage} lang="ro" className="mx-auto my-8 max-w-6xl overflow-auto bg-[#10221a] p-5 text-white sm:p-10">
       <header className="mb-7 flex flex-wrap items-start justify-between gap-4 border-b border-white/20 pb-5">
         <div>
-          <p className="font-mono text-xs uppercase tracking-widest text-emerald-300">Sortify · Prototip de banc</p>
+          <p className="font-mono text-xs uppercase tracking-widest text-emerald-300">Sortify · Stație de sortare</p>
           <h1 className="mt-2 text-3xl font-bold sm:text-5xl">Unde merge ambalajul?</h1>
           <p className="mt-2 text-sm text-emerald-100">
             {station ? `${modelSources[station.model_source]} · ${outputs[station.mode]}` : "Stație locală"}
@@ -187,9 +246,22 @@ export function BenchKiosk() {
               </div>
               <p className="my-3 text-sm text-emerald-100">Arată un singur obiect în centrul cadrului.</p>
               {camera === "on" ? (
-                <button className={button} disabled={busy || !station} onClick={() => void scan()}>
-                  {busy ? "Se scanează…" : "Scanează obiectul"}
-                </button>
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    <button className={button} disabled={busy || !station || autoActive} onClick={() => void scan()}>
+                      {busy ? "Se scanează…" : "Scanează obiectul"}
+                    </button>
+                    <button className={button} disabled={!autoActive && (busy || !station)} onClick={() => {
+                      setError(null);
+                      setAutomatic(autoActive ? null : "calibrating");
+                    }}>
+                      {autoActive ? "Oprește automatizarea" : "Calibrează cu zona goală"}
+                    </button>
+                  </div>
+                  {automatic && <p role="status" className="mt-3 text-sm text-emerald-100">
+                    {busy ? "Se scanează…" : automaticMessages[automatic]}
+                  </p>}
+                </>
               ) : (
                 <button className={button} disabled={!station || camera === "starting"} onClick={() => void startCamera()}>
                   {camera === "starting" ? "Se pornește camera…" : "Pornește camera"}
