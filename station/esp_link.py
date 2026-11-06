@@ -7,6 +7,15 @@ from .model import DESTINATIONS
 
 
 DEFAULT_ESP_URL = "http://192.168.4.1"
+MATERIAL_ALIASES = {
+    "sticla": "glass",
+    "pet": "plastic",
+    "pet/plastic": "plastic",
+    "hartie": "paper",
+    "carton": "paper",
+    "hartie/carton": "paper",
+    "altele": "other",
+}
 
 
 class BoardError(RuntimeError):
@@ -55,19 +64,34 @@ class Board:
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description="Confirm each ESP32 destination with the servo unloaded.")
+    parser = argparse.ArgumentParser(description="Testeaza interactiv destinatiile ESP32, fara sarcina pe servo.")
     parser.add_argument("--url", default=DEFAULT_ESP_URL, help="ESP32 HTTP base URL")
     args = parser.parse_args()
     try:
         board = Board(args.url)
-        board.check()
-        for destination in DESTINATIONS:
-            input(f"Press Enter to indicate {destination} (Ctrl+C to stop): ")
-            board.indicate(destination)
-            print(f"ESP32 acknowledged {destination}. Check the LED and pointer visually.")
-    except (ValueError, BoardError) as exc:
+    except ValueError as exc:
         parser.exit(1, f"{exc}\n")
-    except KeyboardInterrupt:
+
+    choices = ", ".join(DESTINATIONS)
+    print(f"Alege materialul ({choices}). Merg si sticla, PET, hartie, carton si altele.")
+    print("Apasa Ctrl+C pentru oprire.")
+    try:
+        while True:
+            command = input("Material > ").strip().casefold().translate(str.maketrans("ăâ", "aa"))
+            command = command.replace(" ", "")
+            if not command:
+                continue
+            destination = MATERIAL_ALIASES.get(command, command)
+            if destination not in DESTINATIONS:
+                print(f"Material necunoscut. Alege dintre {choices}.")
+                continue
+            try:
+                board.indicate(destination)
+            except BoardError as exc:
+                print(f"Eroare ESP32: {exc}")
+                continue
+            print(f"ESP32 a confirmat {destination}. Verifica LED-ul si pozitia servo-ului.")
+    except (KeyboardInterrupt, EOFError):
         print()
 
 

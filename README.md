@@ -93,7 +93,7 @@ curl.exe --fail http://192.168.4.1/health
 .\.venv\Scripts\python.exe -m station.esp_link
 ```
 
-Testul de ieșiri cere Enter înainte de fiecare comandă. Calibrați servo-ul fără sarcină înainte de a fixa săgeata din carton.
+În testul de ieșiri, scrieți `glass`, `metal`, `plastic`, `paper` sau `other` și apăsați Enter. Puteți introduce materiale în orice ordine, de oricâte ori. Apăsați **Ctrl+C** pentru oprire. Calibrați servo-ul fără sarcină înainte de a fixa săgeata din carton.
 
 | Destinație | GPIO LED | Culoare |
 | --- | ---: | --- |
