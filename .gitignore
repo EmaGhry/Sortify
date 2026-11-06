@@ -40,6 +40,7 @@ build-log.txt
 
 # Bench station build and local data
 .pio/
+/.cache/
 .venv/
 __pycache__/
 *.py[cod]
