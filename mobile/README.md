@@ -1,6 +1,6 @@
 # 📱 Sortify Mobile
 
-**React Native (Expo) app** — same AI recycling assistant, native camera, same eco-print design.
+**React Native (Expo) app** for scanning from a phone. The bench station has its own browser kiosk and ESP32 control path. See the [station README](../README.md).
 Shares ~90% of its brain with the web app: the recycling knowledge base, all 7 language
 dictionaries, gamification rules, CO₂ factors and the offline demo engine are **imported
 directly from the repo root** (`../lib`, `../locales`) — one source of truth, zero duplication.
@@ -8,8 +8,8 @@ directly from the repo root** (`../lib`, `../locales`) — one source of truth, 
 ## Run it (Expo Go — no native build needed)
 
 ```bash
-# 1. from the repo root, start the API backend
-npm run dev            # Next.js API on :3000
+# 1. from the repo root, start the API for LAN access
+npm run dev -- --hostname 0.0.0.0
 
 # 2. in another terminal
 cd mobile
@@ -21,12 +21,13 @@ The app **auto-discovers the API** in Expo Go: it derives the laptop's LAN IP fr
 Expo host URI and calls `http://<laptop-ip>:3000`. To point it elsewhere:
 
 ```bash
-cp .env.example .env   # then set EXPO_PUBLIC_API_URL=https://your-sortify.vercel.app
+cp .env.example .env   # then set EXPO_PUBLIC_API_URL=http://<laptop-ip>:3000
 ```
 
 > **Offline-proof demo:** "Try an example" runs the demo engine *inside the app*
-> (`@shared/ai/demo`) — no network needed. Live scans hit `/api/analyze` on the server,
-> so the AI key never touches the phone.
+> (`@shared/ai/demo`) without a network connection. Live scans use `/api/analyze`
+> on the Next.js server. For live scans, start Next.js with `SORTIFY_BENCH=1`
+> and run the Python station service with the team model endpoint.
 
 ## Instalare reală pe telefon (APK, fără Expo Go)
 
@@ -49,11 +50,11 @@ EXPO_PUBLIC_API_URL=http://<IP-LAN-al-laptopului>:3000
 ```
 
 Setează-l pe IP-ul LAN al laptopului tău (`ipconfig` → adaptorul Wi-Fi). Telefonul trebuie să fie pe **același wifi**
-cu laptopul când demonezi, iar serverul pornit (`npm run dev` din rădăcină).
+cu laptopul când demonezi, iar serverul pornit cu opțiunea LAN de mai sus.
 Prima dată, Windows Firewall poate cere permisiune pentru Node — acceptă.
 
 > `usesCleartextTraffic` e activat (necesar pentru HTTP către LAN pe Android 9+).
-> Pentru producție: backend pe Vercel (HTTPS) și scoate flag-ul.
+> O instalare HTTPS trebuie să aibă acces la serviciul de clasificare al echipei.
 
 ### Varianta B — EAS Build (cloud, cont Expo gratuit)
 
@@ -63,7 +64,7 @@ npx eas login          # cont gratuit pe expo.dev
 npm run build:apk:eas  # build în cloud -> link de download pentru APK
 ```
 
-Setează `EXPO_PUBLIC_API_URL` în `eas.json` (ex: URL-ul Vercel).
+Setează `EXPO_PUBLIC_API_URL` în `eas.json` la adresa backendului accesibil telefonului.
 
 ### iOS?
 
@@ -77,7 +78,7 @@ mobile/src
 ├── app/            # expo-router: 4 tabs (Scan / History / Impact / Guide)
 ├── components/     # eco-print UI: TopBar, ConfRing, MaterialIcon, PressButton, Stamps
 ├── lib/
-│   ├── api.ts      # typed API client (key stays server-side) + offline-aware errors
+│   ├── api.ts      # typed API client and offline-aware errors
 │   ├── app-state.tsx  # AsyncStorage-backed scan history + badge evaluation
 │   ├── i18n.tsx    # reuses locales/dict.*.json — device-locale auto-detect
 │   ├── storage.ts  # AsyncStorage mirror of the web localStorage schema (sortify:v1)

@@ -1,6 +1,8 @@
 # Sortify · ByteForce
 
-Sortify recunoaște ambalaje cu AI și alege destinația de colectare. În prototipul de banc, laptopul scanează un obiect, ESP32 aprinde LED-ul materialului, iar servo-ul arată direcția pe patru cartonașe. Randarea automatului reprezintă conceptul în care un jgheab va transporta fizic obiectul.
+Sortify este un prototip de stație pentru cantine și zone de pauză. Camera scanează un obiect, modelul echipei identifică materialul, iar ESP32 primește categoria prin Wi‑Fi. Placa aprinde LED-ul corespunzător și servo-ul indică destinația pe unul dintre cele patru cartonașe. Pentru **Altele**, se aprinde LED-ul alb, iar servo-ul rămâne pe loc.
+
+Pentru prezentare, porniți de la montajul cu care ați verificat deja traseul **cameră → model → ESP32**. Carcasa, jgheabul și cele patru compartimente sunt prezentate separat ca **[proiect pentru aparatul final](docs/SORTIFY-STATION-PLAN.md)**.
 
 | Interfață | Rol |
 | --- | --- |
@@ -10,12 +12,11 @@ Sortify recunoaște ambalaje cu AI și alege destinația de colectare. În proto
 | `/scan` | Scannerul web cu exemple demo și analiză prin modelul echipei. Scanarea de aici nu comandă placa. |
 | [Expo Android](mobile/README.md) | Clientul mobil existent pentru scannerul public. |
 
-## Pornire rapidă pe Windows
+## Pornire locală pe Windows
 
-Din rădăcina proiectului, instalați Node.js și Python 3.12–3.14, apoi rulați în PowerShell:
+Comenzile au fost verificate cu Node.js 24 și Python 3.14. Rulați-le în PowerShell, din rădăcina proiectului:
 
 ```powershell
-$env:PLATFORMIO_CORE_DIR = Join-Path $PWD '.pio'
 $env:TEMP = Join-Path $PWD '.cache\tmp'
 $env:TMP = $env:TEMP
 New-Item -ItemType Directory -Force $env:TEMP | Out-Null
@@ -23,18 +24,16 @@ npm ci --cache .cache/npm
 python -m venv .venv
 ```
 
-Terminalul web:
+**Terminalul 1 · Site-ul**
 
 ```powershell
 $env:SORTIFY_BENCH = '1'
 npm run dev -- --hostname 127.0.0.1
 ```
 
-Deschideți [http://127.0.0.1:3000/kiosk](http://127.0.0.1:3000/kiosk). Stația și interfața de banc se pornesc pe același PC. La prima rulare permiteți accesul camerei în browser.
+Pentru demo fără internet, rulați `npm run build` cât încă aveți internet. În sala de prezentare, folosiți `npm start -- --hostname 127.0.0.1` în același terminal, cu `SORTIFY_BENCH=1`.
 
-Pentru demo fără internet, rulați `npm run build` cât încă aveți internet. În sala de prezentare, folosiți `npm start -- --hostname 127.0.0.1` cu `SORTIFY_BENCH=1` în loc de serverul de dezvoltare.
-
-Într-un al doilea terminal alegeți **un singur mod**:
+**Terminalul 2 · Serviciul stației**
 
 | Mod | Comandă |
 | --- | --- |
@@ -42,13 +41,15 @@ Pentru demo fără internet, rulați `npm run build` cât încă aveți internet
 | Modelul colegului prin LAN, fără ESP32 | `.\.venv\Scripts\python.exe -m station --preview --model-url http://192.168.4.2:8000/predict` |
 | Modelul colegului prin LAN și ESP32 | `.\.venv\Scripts\python.exe -m station --esp --model-url http://192.168.4.2:8000/predict` |
 
-Pentru modurile cu ESP32, conectați laptopul la rețeaua **Sortify-Bench**. Adresa modelului colegului din tabel este un exemplu. După schimbarea modului, reîncărcați kiosk-ul.
+Rulați o singură comandă din tabel. Pentru modul cu ESP32, conectați laptopul la rețeaua **Sortify-Bench** și înlocuiți adresa exemplu cu URL-ul primit de la coleg. La schimbarea modului, opriți comanda anterioară cu **Ctrl+C**. Serviciul folosește portul local `8765`.
+
+Deschideți [kiosk-ul](http://127.0.0.1:3000/kiosk) pe PC-ul care rulează site-ul și serviciul stației. Reîncărcați pagina după schimbarea modului. În modurile cu cameră, permiteți accesul când îl cere browserul.
 
 Pentru scannerul public vizitați `/scan`. Analiza reală folosește serviciul local al stației și același endpoint al echipei. Exemplele demo sunt disponibile fără model.
 
 ## Modelul colegului prin rețea
 
-Modelul rulează pe laptopul colegului. În modul cu ESP32, conectați ambele laptopuri la **Sortify-Bench**. Folosiți IP-ul primit de laptopul colegului în acea rețea și porniți serverul modelului pe interfața de rețea. Contractul implementat este:
+Pentru două laptopuri, conectați-le la **Sortify-Bench**. Colegul pornește serverul modelului pe `0.0.0.0` și vă dă URL-ul complet, cu IP-ul primit în acea rețea, portul și ruta. Dacă site-ul și modelul rulează pe același laptop, adresa modelului poate folosi `127.0.0.1`. Endpointul acceptă un POST cu JPEG și răspunde cu JSON:
 
 ```http
 POST /predict
@@ -65,16 +66,23 @@ Modelul trimite exact una dintre cele cinci etichete: `glass` (Sticlă), `metal`
 
 ## Firmware și montaj
 
-Profilul PlatformIO este pentru ESP32 DevKit clasic cu `esp32dev`. Confirmați modelul plăcii înainte de flash. Copiați exemplul și schimbați parola în fișierul local `wifi_secrets.h` înainte de compilare. Acel fișier este ignorat în Git.
+Acești pași sunt pentru o placă pe care trebuie încărcat firmware-ul Sortify. Profilul PlatformIO este pentru ESP32 DevKit clasic cu `esp32dev`. În PowerShell, din rădăcina repo-ului:
 
 ```powershell
+$env:PLATFORMIO_CORE_DIR = Join-Path $PWD '.pio'
+$env:TEMP = Join-Path $PWD '.cache\tmp'
+$env:TMP = $env:TEMP
+New-Item -ItemType Directory -Force $env:TEMP | Out-Null
 .\.venv\Scripts\python.exe -m pip install --no-cache-dir platformio==6.2.0
 if (-not (Test-Path firmware/include/wifi_secrets.h)) {
     Copy-Item firmware/include/wifi_secrets.example.h firmware/include/wifi_secrets.h
 }
-# Editează parola înainte de build și upload.
-.\.venv\Scripts\python.exe -m platformio run -d firmware
 .\.venv\Scripts\python.exe -m platformio device list
+```
+
+Setați parola Wi‑Fi în fișierul local `firmware/include/wifi_secrets.h`. Fișierul este ignorat în Git. Înlocuiți `COM5` cu portul care apare când conectați placa prin USB și rulați:
+
+```powershell
 .\.venv\Scripts\python.exe -m platformio run -d firmware -t upload --upload-port COM5
 ```
 
@@ -85,13 +93,13 @@ curl.exe --fail http://192.168.4.1/health
 .\.venv\Scripts\python.exe -m station.esp_link
 ```
 
-Testul de ieșiri cere Enter înainte de fiecare comandă. Calibrați servo-ul fără sarcină înainte de a fixa săgeata din carton. Rulați comenzile PlatformIO din terminalul în care ați setat `PLATFORMIO_CORE_DIR`, `TEMP` și `TMP` către folderul proiectului.
+Testul de ieșiri cere Enter înainte de fiecare comandă. Calibrați servo-ul fără sarcină înainte de a fixa săgeata din carton.
 
 | Destinație | GPIO LED | Culoare |
 | --- | ---: | --- |
 | Sticlă | 25 | Verde |
 | Metal | 26 | Roșu |
-| Plastic | 27 | Galben |
+| PET/plastic | 27 | Galben |
 | Hârtie/carton | 14 | Albastru |
 | Altele | 33 | Alb |
 
@@ -113,11 +121,11 @@ Pentru o repetiție fără model sau placă, porniți serviciul cu `--simulate`.
 
 Stația păstrează local metadatele scanării în `station/data/station.sqlite3`. Simulările sunt excluse. Afișajul operatorului separă previzualizările de comenzile ESP32. Folosiți `--history <cale.sqlite3>` pentru o bază separată de test.
 
+## Verificarea proiectului
+
 ```powershell
 npm run build
 npm run i18n:validate
 node --test app/kiosk/presence.test.mts
 .\.venv\Scripts\python.exe -m unittest discover -s station/tests
 ```
-
-[Planul stației automate](docs/SORTIFY-STATION-PLAN.md) descrie etapa ulterioară cu clapetă, senzori, jgheab și compartimente.
