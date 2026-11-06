@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { observePresence, startPresence, type PresenceState } from "./presence";
 
 const destinations = {
@@ -37,6 +38,7 @@ type Result = StationStatus & {
   elapsed_ms: number;
   hardware: "acknowledged" | "disabled" | "unconfirmed";
   error: string | null;
+  history_saved?: boolean;
 };
 
 const automaticMessages = {
@@ -80,6 +82,7 @@ export function BenchKiosk() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [automatic, setAutomatic] = useState<PresenceState["phase"] | null>(null);
+  const [checking, setChecking] = useState(false);
   const autoActive = automatic !== null;
 
   const refresh = useCallback(async () => {
@@ -171,6 +174,30 @@ export function BenchKiosk() {
     }
   }, []);
 
+  async function toggleAutomatic() {
+    setError(null);
+    if (autoActive) {
+      setAutomatic(null);
+      return;
+    }
+    if (!station || camera !== "on" || scanLock.current || checking) return;
+    if (station.mode === "bench") {
+      setChecking(true);
+      try {
+        const response = await fetch("/api/bench?view=hardware", { cache: "no-store" });
+        if (!response.ok || !(await response.json()).ready) {
+          throw new Error("ESP32 nu răspunde. Verifică dacă laptopul este conectat la Sortify-Bench.");
+        }
+      } catch (cause) {
+        if (mounted.current) setError(cause instanceof Error ? cause.message : "ESP32 nu răspunde.");
+        return;
+      } finally {
+        if (mounted.current) setChecking(false);
+      }
+    }
+    if (mounted.current && !document.hidden && stream.current?.active) setAutomatic("calibrating");
+  }
+
   useEffect(() => {
     if (!autoActive || camera !== "on" || station?.mode === "simulation") return;
     const sample = document.createElement("canvas");
@@ -182,7 +209,7 @@ export function BenchKiosk() {
     let stopped = false;
     const timer = window.setInterval(() => {
       const element = video.current;
-      if (stopped || scanLock.current || !element || element.readyState < 2 || element.currentTime === lastTime) return;
+      if (stopped || scanLock.current || !element?.videoWidth || element.readyState < 2 || element.currentTime === lastTime) return;
       lastTime = element.currentTime;
       drawSquare(element, context, 32);
       const step = observePresence(presence, context.getImageData(0, 0, 32, 32).data);
@@ -219,10 +246,13 @@ export function BenchKiosk() {
             {station ? `${modelSources[station.model_source]} · ${outputs[station.mode]}` : "Stație locală"}
           </p>
         </div>
-        <button className={button} onClick={() => {
-          if (document.fullscreenElement) void document.exitFullscreen();
-          else void stage.current?.requestFullscreen().catch(() => setError("Browserul nu permite modul ecran complet."));
-        }}>Ecran complet</button>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/operator" className={button}>Operator</Link>
+          <button className={button} onClick={() => {
+            if (document.fullscreenElement) void document.exitFullscreen();
+            else void stage.current?.requestFullscreen().catch(() => setError("Browserul nu permite modul ecran complet."));
+          }}>Ecran complet</button>
+        </div>
       </header>
 
       <div className="grid items-start gap-6 md:grid-cols-2">
@@ -248,14 +278,12 @@ export function BenchKiosk() {
               {camera === "on" ? (
                 <>
                   <div className="flex flex-wrap gap-2">
-                    <button className={button} disabled={busy || !station || autoActive} onClick={() => void scan()}>
+                    <button className={button} disabled={busy || checking || !station || autoActive} onClick={() => void scan()}>
                       {busy ? "Se scanează…" : "Scanează obiectul"}
                     </button>
-                    <button className={button} disabled={!autoActive && (busy || !station)} onClick={() => {
-                      setError(null);
-                      setAutomatic(autoActive ? null : "calibrating");
-                    }}>
-                      {autoActive ? "Oprește automatizarea" : "Calibrează cu zona goală"}
+                    <button className={button} disabled={checking || (!autoActive && (busy || !station))}
+                      onClick={() => void toggleAutomatic()}>
+                      {autoActive ? "Oprește automatizarea" : checking ? "Se verifică ESP32…" : "Calibrează cu zona goală"}
                     </button>
                   </div>
                   {automatic && <p role="status" className="mt-3 text-sm text-emerald-100">
@@ -287,6 +315,7 @@ export function BenchKiosk() {
                 {result.hardware === "unconfirmed" && "Comanda ESP32 este neconfirmată. Verifică placa înainte de a continua."}
               </p>
               {result.error && <p className="mt-2 text-sm text-amber-200">{result.error}</p>}
+              {result.history_saved === false && <p className="mt-2 text-sm text-amber-200">Rezultatul nu s-a salvat în istoric.</p>}
               {result.inference_ms !== null && (
                 <p className="mt-4 font-mono text-xs text-emerald-100">
                   Procesare {result.inference_ms} ms · Serviciu {result.elapsed_ms} ms

@@ -3,6 +3,7 @@ import json
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import sqlite3
 from threading import Lock
 from time import perf_counter
 
@@ -10,18 +11,21 @@ from .model import (
     Classifier, DEFAULT_MODEL, DESTINATIONS, HttpClassifier, InvalidImage, ModelUnavailable, Prediction,
 )
 from .esp_link import Board, BoardError, DEFAULT_ESP_URL
+from .history import History
 
 
 HOST = "127.0.0.1"
 PORT = 8765
 MAX_BYTES = 1_000_000
+DEFAULT_HISTORY = Path(__file__).parent / "data" / "station.sqlite3"
 
 
 class Station:
-    def __init__(self, mode, classifier=None, board=None):
+    def __init__(self, mode, classifier=None, board=None, history=None):
         self.mode = mode
         self.classifier = classifier
         self.board = board
+        self.history = history
         self.lock = Lock()
 
     def scan(self, content_type, data):
@@ -49,7 +53,7 @@ class Station:
             except BoardError as exc:
                 hardware, error = "unconfirmed", str(exc)
 
-        return {
+        result = {
             "mode": self.mode,
             "model_source": self.model_source,
             "label": prediction.label,
@@ -60,6 +64,13 @@ class Station:
             "hardware": hardware,
             "error": error,
         }
+        if self.mode != "simulation" and self.history:
+            try:
+                self.history.record(result)
+            except sqlite3.Error as exc:
+                print(f"History write failed: {exc}", flush=True)
+                result["history_saved"] = False
+        return result
 
     @property
     def model_source(self):
@@ -99,6 +110,27 @@ def make_handler(station):
                 return
             if self.path == "/status":
                 self.respond(200, {"mode": station.mode, "model_source": station.model_source})
+            elif self.path == "/hardware":
+                if not station.board:
+                    self.respond(200, {"ready": None})
+                    return
+                try:
+                    station.board.check()
+                except BoardError as exc:
+                    self.respond(503, {"ready": False, "error": str(exc)})
+                else:
+                    self.respond(200, {"ready": True})
+            elif self.path == "/history":
+                if not station.history:
+                    self.respond(200, {"summary": None, "events": []})
+                    return
+                try:
+                    snapshot = station.history.snapshot()
+                except sqlite3.Error as exc:
+                    print(f"History read failed: {exc}", flush=True)
+                    self.respond(503, {"error": "Istoricul local nu este disponibil."})
+                else:
+                    self.respond(200, snapshot)
             else:
                 self.respond(404, {"error": "Unknown station endpoint."})
 
@@ -153,6 +185,7 @@ def main():
     model.add_argument("--model", type=Path, default=DEFAULT_MODEL, help="WasteWise-compatible ONNX file.")
     model.add_argument("--model-url", help="HTTP(S) endpoint accepting JPEG and returning label and score.")
     parser.add_argument("--threshold", type=float, default=0.75, help="Minimum class score to indicate.")
+    parser.add_argument("--history", type=Path, default=DEFAULT_HISTORY, help="SQLite file for live scan history.")
     args = parser.parse_args()
     if not 0 < args.threshold <= 1:
         parser.error("--threshold must be greater than 0 and at most 1")
@@ -172,7 +205,11 @@ def main():
             board = Board(args.esp) if args.esp else None
         except Exception as exc:
             parser.exit(1, f"Could not initialize the station: {exc}\n")
-        station = Station("bench" if board else "preview", classifier, board)
+        try:
+            history = History(args.history)
+        except (OSError, sqlite3.Error) as exc:
+            parser.exit(1, f"Could not initialize station history: {exc}\n")
+        station = Station("bench" if board else "preview", classifier, board, history)
 
     try:
         with ThreadingHTTPServer((HOST, PORT), make_handler(station)) as server:

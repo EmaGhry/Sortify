@@ -4,7 +4,8 @@ Sortify recunoaște ambalaje cu AI și alege destinația de colectare. În proto
 
 | Interfață | Rol |
 | --- | --- |
-| `/kiosk` | Demo pe același PC cu stația. Cameră în browser, rezultat AI, stare ESP32 și ecran complet. |
+| `/kiosk` | Stația pe același PC. Cameră în browser, scanare manuală sau automată, rezultat AI și confirmare ESP32. |
+| `/operator` | Ultimele 50 de scanări și totaluri din istoricul local. |
 | `/` | Scannerul web existent, cu exemple demo și analiză live prin Gemini sau OpenAI dacă este configurată. |
 | [Expo Android](mobile/README.md) | Clientul mobil existent pentru scannerul public. |
 
@@ -104,13 +105,19 @@ ESP32 creează propriul Wi-Fi cu parolă și primește `GET /sort?type=plastic`,
 ## Demo pentru juriu
 
 1. Așezați patru cartonașe în dreptul pozițiilor calibrate și deschideți kiosk-ul în ecran complet.
-2. Rugați un jurat să aleagă între două ambalaje testate. Arătați-l camerei și apăsați **Scanează obiectul**. Arătați rezultatul, LED-ul și poziția săgeții. Repetați cu a doua categorie.
-3. Folosiți un exemplu verificat în prealabil pentru refuz. Ecranul arată **Obiect neacceptat**, LED-ul alb se aprinde și săgeata rămâne pe loc.
-4. Arătați randarea cu eticheta **Conceptul aparatului final**. Explicați că prototipul demonstrează recunoașterea și alegerea destinației. Păstrați un clip al unei rulări reale pentru situația în care montajul are probleme în sală.
+2. Fixați camera spre un fundal simplu și porniți-o. Goliți cadrul și apăsați **Calibrează cu zona goală**. În modul hardware, kiosk-ul verifică mai întâi că ESP32 răspunde.
+3. Când apare **Pregătit**, rugați un jurat să aleagă între două ambalaje testate și să-l țină nemișcat în centru. Arătați rezultatul, LED-ul și săgeata. Retrageți obiectul complet și așteptați din nou **Pregătit** înainte de al doilea ambalaj.
+4. Folosiți un exemplu verificat în prealabil pentru refuz. Ecranul arată **Obiect neacceptat**, LED-ul alb se aprinde și săgeata rămâne pe loc.
+5. Arătați [istoricul operatorului](http://127.0.0.1:3000/operator) și randarea cu eticheta **Conceptul aparatului final**. Păstrați un clip al unei rulări reale pentru situația în care montajul are probleme în sală.
+
+Folosiți lumină constantă și o singură filă cu camera. Detectarea prezenței se bazează pe diferența față de cadrul gol. Recalibrați dacă schimbați camera, poziția sau lumina. **Scanează obiectul** rămâne disponibil după oprirea automatizării. La eroare de model, comandă neconfirmată, cameră deconectată sau filă ascunsă, automatizarea se oprește și se rearmează manual.
+
+În modurile ONNX și model prin rețea, stația păstrează local metadatele scanării în `station/data/station.sqlite3`. Simulările sunt excluse. Afișajul operatorului separă previzualizările de comenzile ESP32. Folosiți `--history <cale.sqlite3>` pentru o bază separată de test.
 
 ```powershell
 npm run build
 npm run i18n:validate
+node --test app/kiosk/presence.test.mts
 .\.venv\Scripts\python.exe -m unittest discover -s station/tests
 ```
 

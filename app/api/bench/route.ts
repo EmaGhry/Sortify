@@ -29,6 +29,9 @@ export async function GET(request: Request) {
   if (process.env.SORTIFY_BENCH !== "1" || !localHost.test(request.headers.get("host") ?? "")) {
     return error("Modul de banc se activează local cu SORTIFY_BENCH=1.", 404);
   }
+  const view = new URL(request.url).searchParams.get("view");
+  if (view === "history") return forward("/history");
+  if (view === "hardware") return forward("/hardware");
   return forward("/status");
 }
 
