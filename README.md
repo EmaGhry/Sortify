@@ -41,7 +41,7 @@ Pentru demo fără internet, rulați `npm run build` cât încă aveți internet
 | Modelul colegului prin LAN, fără ESP32 | `.\.venv\Scripts\python.exe -m station --preview --model-url http://192.168.4.2:8000/predict` |
 | Modelul colegului prin LAN și ESP32 | `.\.venv\Scripts\python.exe -m station --esp --model-url http://192.168.4.2:8000/predict` |
 
-Rulați o singură comandă din tabel. Pentru modul cu ESP32, conectați laptopul la rețeaua **Sortify-Bench** și înlocuiți adresa exemplu cu URL-ul primit de la coleg. La schimbarea modului, opriți comanda anterioară cu **Ctrl+C**. Serviciul folosește portul local `8765`.
+Rulați o singură comandă din tabel. Pentru modul cu ESP32, conectați laptopul la rețeaua creată de placa echipei (**SortBot** în sketch-ul Emei). Înlocuiți adresa modelului din exemplu cu URL-ul primit de la coleg. Dacă placa folosește altă adresă decât `http://192.168.4.1`, treceți adresa ei după `--esp`. La schimbarea modului, opriți comanda anterioară cu **Ctrl+C**. Serviciul folosește portul local `8765`.
 
 Deschideți [kiosk-ul](http://127.0.0.1:3000/kiosk) pe PC-ul care rulează site-ul și serviciul stației. Reîncărcați pagina după schimbarea modului. În modurile cu cameră, permiteți accesul când îl cere browserul.
 
@@ -49,7 +49,7 @@ Pentru scannerul public vizitați `/scan`. Analiza reală folosește serviciul l
 
 ## Modelul colegului prin rețea
 
-Pentru două laptopuri, conectați-le la **Sortify-Bench**. Colegul pornește serverul modelului pe `0.0.0.0` și vă dă URL-ul complet, cu IP-ul primit în acea rețea, portul și ruta. Dacă site-ul și modelul rulează pe același laptop, adresa modelului poate folosi `127.0.0.1`. Endpointul acceptă un POST cu JPEG și răspunde cu JSON:
+Pentru două laptopuri, conectați-le la rețeaua ESP32. Colegul pornește serverul modelului pe `0.0.0.0` și vă dă URL-ul complet, cu IP-ul primit în acea rețea, portul și ruta. Dacă site-ul și modelul rulează pe același laptop, adresa modelului poate folosi `127.0.0.1`. Endpointul acceptă un POST cu JPEG și răspunde cu JSON:
 
 ```http
 POST /predict
