@@ -59,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MobileTabbar />
           <main className="flex-1 w-full">{children}</main>
           <footer className="border-t-[1.5px] border-ink mt-14">
-            <div className="mx-auto max-w-[1200px] px-4 sm:px-6 py-6 flex flex-wrap items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
+            <div className="mx-auto max-w-[1200px] px-4 sm:px-6 py-6 flex flex-wrap items-center justify-between gap-3 font-semibold text-xs uppercase tracking-wider text-ink-soft">
               <span className="inline-flex items-center gap-2">
                 <Recycle className="size-3.5 text-leaf" />
                 Sortify — ByteForce

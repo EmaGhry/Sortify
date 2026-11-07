@@ -83,7 +83,7 @@ export function StationHistory() {
     <section lang="ro" className="mx-auto max-w-[1200px] px-4 py-8 text-ink sm:px-6 sm:py-10">
       <header className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b-[1.5px] border-ink pb-5">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-leaf">Sortify · Operator</p>
+          <p className="font-semibold text-xs uppercase tracking-wider text-leaf">Sortify · Operator</p>
           <h1 className="mt-2 font-display text-4xl leading-[1.05] tracking-tight sm:text-6xl">Statisticile stației</h1>
           <p className="mt-3 inline-flex items-center gap-2 font-mono text-xs text-ink-soft">
             <span aria-hidden className={`size-2 rounded-full ${error ? "bg-danger" : "bg-leaf animate-pulse-soft"}`} />
@@ -105,7 +105,7 @@ export function StationHistory() {
               ["Confirmări ESP32", summary.acknowledged, `${summary.unconfirmed} neconfirmate`],
             ].map(([label, value, note]) => (
               <div key={label} className={`${card} p-4 sm:p-5`}>
-                <dt className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-soft">{label}</dt>
+                <dt className="font-semibold text-xs uppercase tracking-wider text-ink-soft">{label}</dt>
                 <dd className="mt-2 font-display text-4xl leading-none sm:text-5xl">{value}</dd>
                 <dd className="mt-2 text-xs text-ink-soft">{note}</dd>
               </div>
@@ -146,7 +146,7 @@ export function StationHistory() {
                 <div className="mt-4 max-h-[28rem] overflow-auto">
                   <table className="w-full whitespace-nowrap text-left text-sm">
                     <thead className="sticky top-0 bg-paper2">
-                      <tr className="border-b-[1.5px] border-ink font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft">
+                      <tr className="border-b-[1.5px] border-ink font-semibold text-xs uppercase tracking-wider text-ink-soft">
                         {["Oră", "Rezultat", "Scor", "Durată", "Stare"].map((label) => <th className="px-2 py-2.5" key={label} scope="col">{label}</th>)}
                       </tr>
                     </thead>

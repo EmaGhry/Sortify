@@ -30,7 +30,7 @@ export function GuideClient() {
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6 sm:py-14">
       <div className="mb-8 max-w-xl">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.24em] text-leaf">
+        <p className=" text-xs font-bold uppercase tracking-wider text-leaf">
           {t("guide.kicker")}
         </p>
         <h1 className="mt-2 font-display text-4xl leading-[0.98] tracking-tight sm:text-6xl">
@@ -56,7 +56,7 @@ export function GuideClient() {
             <span className="mx-auto grid size-12 -rotate-2 place-items-center border-[1.5px] border-ink bg-paper">
               <Leaf className="size-6 text-leaf" />
             </span>
-            <p className="mt-3 font-mono text-xs uppercase tracking-[0.16em] text-ink-soft">
+            <p className="mt-3 font-semibold text-xs uppercase tracking-wider text-ink-soft">
               {t("impact.noData")}
             </p>
           </div>
@@ -81,7 +81,7 @@ function GuideCard({ profile }: { profile: MaterialProfile }) {
         <div className="min-w-0 flex-1">
           <h2 className="font-display text-xl">{profile.label[lang]}</h2>
           <span
-            className="mt-1.5 inline-block -rotate-1 border-[1.5px] border-ink px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em]"
+            className="mt-1.5 inline-block -rotate-1 border-[1.5px] border-ink px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
             style={{ backgroundColor: `${profile.bin.color}55` }}
           >
             {profile.bin.label[lang]}
@@ -93,7 +93,7 @@ function GuideCard({ profile }: { profile: MaterialProfile }) {
 
       <div className="mt-4 grid gap-5 sm:grid-cols-2">
         <div>
-          <h3 className="mb-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-leaf">
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-leaf">
             {t("guide.whatGoes")}
           </h3>
           <ul className="space-y-2">
@@ -106,7 +106,7 @@ function GuideCard({ profile }: { profile: MaterialProfile }) {
           </ul>
         </div>
         <div>
-          <h3 className="mb-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-danger">
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-danger">
             {t("guide.whatDoesnt")}
           </h3>
           <ul className="space-y-2">
@@ -120,7 +120,7 @@ function GuideCard({ profile }: { profile: MaterialProfile }) {
         </div>
       </div>
 
-      <p className="mt-4 inline-block border-[1.5px] border-ink bg-paper px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-ink-soft">
+      <p className="mt-4 inline-block border-[1.5px] border-ink bg-paper px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-ink-soft">
         {t("guide.co2Note")}: <span className="text-leaf">{formatGrams(profile.co2PerItemG, lang)} CO2</span>
       </p>
     </article>

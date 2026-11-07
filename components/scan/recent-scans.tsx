@@ -13,8 +13,8 @@ export function RecentScans({ scans }: { scans: StoredScan[] }) {
   return (
     <section className="mt-10">
       <div className="mb-3 flex items-center justify-between border-b-[1.5px] border-ink pb-2">
-        <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.2em]">{t("scan.recent")}</h2>
-        <Link href="/history" className="font-mono text-[11px] uppercase tracking-[0.16em] text-leaf hover:underline underline-offset-4">
+        <h2 className=" text-xs font-bold uppercase tracking-wider">{t("scan.recent")}</h2>
+        <Link href="/history" className="font-semibold text-xs uppercase tracking-wider text-leaf hover:underline underline-offset-4">
           {t("nav.history")} →
         </Link>
       </div>
@@ -44,14 +44,14 @@ export function RecentScans({ scans }: { scans: StoredScan[] }) {
                   </div>
                 )}
                 <div className="min-w-0 px-0.5 pb-0.5">
-                  <p className="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.14em] text-ink-soft">
+                  <p className="flex items-center justify-between font-semibold text-xs uppercase tracking-wider text-ink-soft">
                     <span>#{String(idx + 1).padStart(2, "0")}</span>
                     <span>{timeAgo(scan.createdAt, lang)}</span>
                   </p>
                   <p className="mt-0.5 truncate text-xs font-bold capitalize" title={scan.itemName}>
                     {scan.itemName}
                   </p>
-                  <p className="font-mono text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: profile.id === "OTHER" ? undefined : profile.bin.color }}>
+                  <p className=" text-xs font-bold uppercase tracking-wider" style={{ color: profile.id === "OTHER" ? undefined : profile.bin.color }}>
                     {profile.label[lang]}
                   </p>
                 </div>

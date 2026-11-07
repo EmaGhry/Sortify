@@ -209,7 +209,7 @@ export function BenchKiosk() {
     <section lang="ro" className="mx-auto max-w-[1200px] overflow-auto px-4 py-8 text-ink sm:px-6 sm:py-10">
       <header className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b-[1.5px] border-ink pb-5">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-leaf">Sortify · Stație de sortare</p>
+          <p className="font-semibold text-xs uppercase tracking-wider text-leaf">Sortify · Stație de sortare</p>
           <h1 className="mt-2 font-display text-4xl leading-[1.05] tracking-tight sm:text-6xl">Unde merge ambalajul?</h1>
           <p className="mt-3 inline-flex items-center gap-2 font-mono text-xs text-ink-soft">
             <span aria-hidden className={`size-2 rounded-full ${station ? "bg-leaf animate-pulse-soft" : "bg-danger"}`} />
@@ -249,7 +249,7 @@ export function BenchKiosk() {
                 </div>
                 {busy && <div aria-hidden className="scan-sweep pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-transparent to-emerald-300/40" />}
                 {camera !== "on" && (
-                  <p className="absolute inset-0 grid place-items-center p-6 text-center font-mono text-xs uppercase tracking-[0.2em] text-paper/70">
+                  <p className="absolute inset-0 grid place-items-center p-6 text-center font-semibold text-xs uppercase tracking-wider text-paper/70">
                     Camera stației
                   </p>
                 )}
@@ -274,7 +274,7 @@ export function BenchKiosk() {
               <div className="relative flex flex-1 flex-col justify-end overflow-hidden p-6 sm:p-8"
                 style={{ background: result.destination === "reject" ? undefined : choice.color }}>
                 <div aria-hidden className="crumple absolute inset-0" />
-                <p className="relative font-mono text-[11px] uppercase tracking-[0.2em] text-ink/70">
+                <p className="relative text-sm font-bold uppercase tracking-wider text-ink/80">
                   {result.mode === "simulation" ? "Rezultat simulat" : "Aruncă în containerul"}
                 </p>
                 <h2 className="relative mt-2 break-words font-display text-[clamp(2.6rem,7vw,5.5rem)] leading-[0.95] tracking-tight">
@@ -309,7 +309,7 @@ export function BenchKiosk() {
             </>
           ) : (
             <div className="paper-sheet flex flex-1 flex-col justify-center p-6 sm:p-8">
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-soft">Rezultat</p>
+              <p className="text-sm font-bold uppercase tracking-wider text-ink/80">Rezultat</p>
               <p className={`mt-2 font-display text-4xl leading-tight sm:text-5xl ${busy ? "animate-pulse-soft" : ""}`}>
                 {busy ? "Se analizează cadrul…" : "Așteaptă o scanare"}
               </p>

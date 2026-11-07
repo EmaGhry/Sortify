@@ -187,7 +187,7 @@ export function ScanPageClient() {
       {/* Asymmetric hero */}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-6 md:mb-10">
         <div className="max-w-xl">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.24em] text-leaf">
+          <p className=" text-xs font-bold uppercase tracking-wider text-leaf">
             {t("scan.kicker")}
           </p>
           <h1 className="mt-2 font-display text-4xl leading-[0.98] tracking-tight sm:text-6xl">
@@ -199,11 +199,11 @@ export function ScanPageClient() {
         </div>
         <div className="flex items-center gap-2.5 pb-1">
           {live === false ? (
-            <span className="flex items-center gap-2 border-[1.5px] border-ink bg-warning/12 px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-warning">
+            <span className="flex items-center gap-2 border-[1.5px] border-ink bg-warning/12 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-warning">
               <WifiOff className="size-3.5" /> {t("common.demo")}
             </span>
           ) : live ? (
-            <span className="flex items-center gap-2 border-[1.5px] border-ink bg-leaf px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-paper">
+            <span className="flex items-center gap-2 border-[1.5px] border-ink bg-leaf px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-paper">
               <ShieldCheck className="size-3.5" /> {t("scan.liveReady")}
             </span>
           ) : null}
@@ -215,7 +215,7 @@ export function ScanPageClient() {
           <p className="font-mono text-xs leading-relaxed text-ink">{t("scan.demoBanner")}</p>
           <button
             onClick={() => void runDemo()}
-            className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-leaf underline underline-offset-4 hover:brightness-110"
+            className=" text-xs font-bold uppercase tracking-wider text-leaf underline underline-offset-4 hover:brightness-110"
           >
             {t("scan.tryExample")} →
           </button>
@@ -285,7 +285,7 @@ function SpecCell({ label, value, highlight }: { label: string; value: string; h
   return (
     <div className="bg-paper2 px-4 py-4 sm:px-6">
       <p className={cn("font-mono text-2xl font-bold sm:text-3xl", highlight && "text-leaf")}>{value}</p>
-      <p className="mt-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ink-soft">{label}</p>
+      <p className="mt-1 text-xs font-bold uppercase tracking-wider text-ink-soft">{label}</p>
     </div>
   );
 }
@@ -308,31 +308,31 @@ function IdlePanel({
         <span className="grid size-20 -rotate-2 place-items-center border-[1.5px] border-ink bg-leaf shadow-hard-sm animate-pulse-soft">
           <ScanLine className="size-10 text-paper" strokeWidth={2} />
         </span>
-        <span className="absolute -right-3 -top-2 rotate-6 border-[1.5px] border-ink bg-paper2 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.14em]">
+        <span className="absolute -right-3 -top-2 rotate-6 border-[1.5px] border-ink bg-paper2 px-2 py-0.5 text-xs font-bold uppercase tracking-wider">
           AI
         </span>
       </div>
       <button
         onClick={onStartCamera}
-        className="btn-press w-full border-[1.5px] border-ink bg-leaf px-6 py-4 font-mono text-sm font-bold uppercase tracking-[0.18em] text-paper shadow-hard"
+        className="btn-press w-full border-[1.5px] border-ink bg-leaf px-6 py-4 text-sm font-bold uppercase tracking-wider text-paper shadow-hard"
       >
         {t("scan.startCamera")}
       </button>
       <div className="flex w-full flex-col gap-2.5 sm:flex-row">
         <button
           onClick={onUploadClick}
-          className="btn-press flex flex-1 items-center justify-center gap-2 border-[1.5px] border-ink bg-paper2 px-4 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] shadow-hard-sm"
+          className="btn-press flex flex-1 items-center justify-center gap-2 border-[1.5px] border-ink bg-paper2 px-4 py-3 text-xs font-bold uppercase tracking-wider shadow-hard-sm"
         >
           <Upload className="size-4" strokeWidth={2.2} /> {t("scan.upload")}
         </button>
         <button
           onClick={onDemo}
-          className="btn-press flex flex-1 items-center justify-center gap-2 border-[1.5px] border-ink bg-paper2 px-4 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] shadow-hard-sm"
+          className="btn-press flex flex-1 items-center justify-center gap-2 border-[1.5px] border-ink bg-paper2 px-4 py-3 text-xs font-bold uppercase tracking-wider shadow-hard-sm"
         >
           <ImagePlus className="size-4 text-leaf" strokeWidth={2.2} /> {t("scan.tryExample")}
         </button>
       </div>
-      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{t("scan.uploadHint")}</p>
+      <p className="font-semibold text-xs uppercase tracking-wider text-ink-soft">{t("scan.uploadHint")}</p>
     </div>
   );
 }
@@ -370,7 +370,7 @@ function PreviewPanel({
             </span>
             <div className="relative flex w-64 flex-col items-center gap-3 border-[1.5px] border-paper/40 bg-paper2 px-5 py-4 text-center shadow-hard-sm">
               <LoaderCircle className="size-7 animate-spin text-leaf" strokeWidth={2.2} />
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.14em]">{stepText}</p>
+              <p className=" text-xs font-bold uppercase tracking-wider">{stepText}</p>
               <div className="flex gap-1.5">
                 {STEP_KEYS.map((_, i) => (
                   <span
@@ -390,14 +390,14 @@ function PreviewPanel({
         <button
           onClick={onAnalyze}
           disabled={busy}
-          className="btn-press flex-1 border-[1.5px] border-ink bg-leaf px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.18em] text-paper shadow-hard-sm disabled:opacity-50"
+          className="btn-press flex-1 border-[1.5px] border-ink bg-leaf px-5 py-3 text-xs font-bold uppercase tracking-wider text-paper shadow-hard-sm disabled:opacity-50"
         >
           {busy ? t("scan.analyzing") : t("scan.analyze")}
         </button>
         <button
           onClick={onRetake}
           disabled={busy}
-          className="btn-press border-[1.5px] border-ink bg-paper2 px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] shadow-hard-sm disabled:opacity-50"
+          className="btn-press border-[1.5px] border-ink bg-paper2 px-5 py-3 text-xs font-bold uppercase tracking-wider shadow-hard-sm disabled:opacity-50"
         >
           {t("scan.retake")}
         </button>
@@ -436,7 +436,7 @@ function ResultPreview({
       <div className="border-t-[1.5px] border-ink bg-paper2 p-4">
         <button
           onClick={onScanAgain}
-          className="btn-press w-full border-[1.5px] border-ink bg-leaf px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.18em] text-paper shadow-hard-sm"
+          className="btn-press w-full border-[1.5px] border-ink bg-leaf px-5 py-3 text-xs font-bold uppercase tracking-wider text-paper shadow-hard-sm"
         >
           {t("result.scanAgain")}
         </button>
@@ -457,7 +457,7 @@ function PlaceholderPanel() {
         </span>
         <div>
           <h2 className="font-display text-xl">{t("scan.title")}</h2>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{t("app.tagline")}</p>
+          <p className="font-semibold text-xs uppercase tracking-wider text-ink-soft">{t("app.tagline")}</p>
         </div>
       </div>
       <ol className="space-y-3">
@@ -474,7 +474,7 @@ function PlaceholderPanel() {
           return (
             <span
               key={m}
-              className="border-[1.5px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em]"
+              className="border-[1.5px] border-ink px-2 py-1 text-xs font-bold uppercase tracking-wider"
               style={{ backgroundColor: `${profile.bin.color}40` }}
             >
               {profile.label[lang]}

@@ -49,7 +49,7 @@ export function HistoryClient() {
     <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6 sm:py-14">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-xl">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.24em] text-leaf">
+          <p className=" text-xs font-bold uppercase tracking-wider text-leaf">
             {t("history.kicker")}
           </p>
           <h1 className="mt-2 font-display text-4xl leading-[0.98] tracking-tight sm:text-5xl">
@@ -60,7 +60,7 @@ export function HistoryClient() {
         {state.scans.length > 0 ? (
           <button
             onClick={clear}
-            className="btn-press flex items-center gap-2 border-[1.5px] border-ink bg-paper2 px-4 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-danger shadow-hard-sm"
+            className="btn-press flex items-center gap-2 border-[1.5px] border-ink bg-paper2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-danger shadow-hard-sm"
           >
             <Trash2 className="size-4" strokeWidth={2.2} /> {t("history.clear")}
           </button>
@@ -92,7 +92,7 @@ export function HistoryClient() {
             <span className="mx-auto grid size-12 -rotate-2 place-items-center border-[1.5px] border-ink bg-paper">
               <Trash2 className="size-6 text-ink-soft" />
             </span>
-            <p className="mt-3 font-mono text-xs uppercase tracking-[0.16em] text-ink-soft">{t("history.empty")}</p>
+            <p className="mt-3 font-semibold text-xs uppercase tracking-wider text-ink-soft">{t("history.empty")}</p>
           </div>
         </div>
       ) : (
@@ -116,7 +116,7 @@ export function HistoryClient() {
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-bold capitalize">{scan.itemName}</p>
-                  <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">
+                  <p className="mt-0.5 font-semibold text-xs uppercase tracking-wider text-ink-soft">
                     <span style={{ color: profile.id === "OTHER" ? undefined : profile.bin.color }} className="font-bold">
                       {profile.label[lang]}
                     </span>
@@ -163,7 +163,7 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "shrink-0 border-[1.5px] px-3.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] transition-colors",
+        "shrink-0 border-[1.5px] px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors",
         active
           ? "border-ink bg-ink text-paper"
           : "border-ink/30 bg-paper2 text-ink-soft hover:border-ink hover:text-ink",

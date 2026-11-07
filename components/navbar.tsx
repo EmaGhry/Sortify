@@ -48,7 +48,7 @@ export function Navbar() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "font-mono text-[11px] uppercase tracking-[0.16em] pb-0.5 border-b-2 transition-colors",
+                  "font-semibold text-xs uppercase tracking-wider pb-0.5 border-b-2 transition-colors",
                   active
                     ? "border-leaf text-leaf"
                     : "border-transparent text-ink-soft hover:text-ink hover:border-ink/30",
@@ -74,7 +74,7 @@ function LanguageSwitch() {
         value={lang}
         onChange={(e) => setLang(e.target.value as typeof lang)}
         aria-label="Language / Limbă / Sprache"
-        className="appearance-none rounded-md border-[1.5px] border-ink bg-paper2 py-1.5 pl-3 pr-8 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-ink outline-none transition-colors hover:bg-ink/5 cursor-pointer"
+        className="appearance-none rounded-md border-[1.5px] border-ink bg-paper2 py-1.5 pl-3 pr-8 text-xs font-bold uppercase tracking-wider text-ink outline-none transition-colors hover:bg-ink/5 cursor-pointer"
       >
         {LOCALES.map((l) => (
           <option key={l.code} value={l.code}>
@@ -100,7 +100,7 @@ export function Ticker() {
         {[0, 1].map((copy) => (
           <span
             key={copy}
-            className="whitespace-nowrap py-1.5 font-mono text-[10px] uppercase tracking-[0.22em]"
+            className="whitespace-nowrap py-1.5 font-semibold text-xs uppercase tracking-wider"
           >
             {items}
           </span>
@@ -129,7 +129,7 @@ export function MobileTabbar() {
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center gap-1 py-2.5 font-mono text-[9px] uppercase tracking-[0.14em] transition-colors",
+                "flex flex-col items-center gap-1 py-2.5 font-semibold text-xs uppercase tracking-wider transition-colors",
                 active ? "text-leaf" : "text-ink-soft",
               )}
             >

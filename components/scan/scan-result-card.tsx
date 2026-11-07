@@ -28,13 +28,13 @@ export function ScanResultCard({
           <div className="flex flex-wrap items-center gap-2">
             {/* material stamp */}
             <span
-              className="-rotate-1 border-[1.5px] border-ink px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em]"
+              className="-rotate-1 border-[1.5px] border-ink px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
               style={{ backgroundColor: `${profile.bin.color}55` }}
             >
               {profile.label[lang]}
             </span>
             {result.demo ? (
-              <span className="rotate-1 border-[1.5px] border-ink bg-ink px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-paper">
+              <span className="rotate-1 border-[1.5px] border-ink bg-ink px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-paper">
                 {t("result.demoBadge")}
               </span>
             ) : null}
@@ -51,7 +51,7 @@ export function ScanResultCard({
         <Ring progress={result.confidence} size={64} stroke={7} id="conf-ring">
           <div className="text-center">
             <p className="font-mono text-sm font-bold">{confidencePct}%</p>
-            <p className="font-mono text-[8px] uppercase tracking-[0.14em] text-ink-soft">{t("result.confidence")}</p>
+            <p className="font-semibold text-xs uppercase tracking-wider text-ink-soft">{t("result.confidence")}</p>
           </div>
         </Ring>
       </div>
@@ -67,11 +67,11 @@ export function ScanResultCard({
           aria-hidden
         />
         <div className="min-w-0">
-          <p className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ink-soft">{t("result.bin")}</p>
+          <p className=" text-xs font-bold uppercase tracking-wider text-ink-soft">{t("result.bin")}</p>
           <p className="font-display text-lg leading-tight">{result.binLabel || profile.bin.label[lang]}</p>
         </div>
         {!result.recyclable ? (
-          <span className="ml-auto flex shrink-0 items-center gap-1.5 border-[1.5px] border-ink bg-danger/12 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-danger">
+          <span className="ml-auto flex shrink-0 items-center gap-1.5 border-[1.5px] border-ink bg-danger/12 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-danger">
             <XCircle className="size-3.5" />
             {t("result.notRecyclable")}
           </span>
@@ -84,7 +84,7 @@ export function ScanResultCard({
         style={{ "--d": "150ms" } as React.CSSProperties}
       >
         <div>
-          <h3 className="mb-2.5 border-b-[1.5px] border-ink pb-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ink">
+          <h3 className="mb-2.5 border-b-[1.5px] border-ink pb-1.5 text-xs font-bold uppercase tracking-wider text-ink">
             {t("result.instructions")}
           </h3>
           <ul className="space-y-2">
@@ -97,7 +97,7 @@ export function ScanResultCard({
           </ul>
         </div>
         <div>
-          <h3 className="mb-2.5 flex items-center gap-1.5 border-b-[1.5px] border-ink pb-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em]">
+          <h3 className="mb-2.5 flex items-center gap-1.5 border-b-[1.5px] border-ink pb-1.5 text-xs font-bold uppercase tracking-wider">
             <Sparkles className="size-3.5 text-leaf" />
             {t("result.tips")}
           </h3>
@@ -120,7 +120,7 @@ export function ScanResultCard({
         >
           <Lightbulb className="mt-0.5 size-4.5 shrink-0 text-leaf" />
           <div>
-            <p className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-leaf">{t("result.ecoFact")}</p>
+            <p className=" text-xs font-bold uppercase tracking-wider text-leaf">{t("result.ecoFact")}</p>
             <p className="mt-1 text-sm leading-snug">{result.ecoFact}</p>
           </div>
         </div>
@@ -139,7 +139,7 @@ export function ScanResultCard({
         </span>
         <button
           onClick={onScanAgain}
-          className="btn-press ml-auto border-[1.5px] border-ink bg-leaf px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.14em] text-paper shadow-hard-sm"
+          className="btn-press ml-auto border-[1.5px] border-ink bg-leaf px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-paper shadow-hard-sm"
         >
           {t("result.scanAgain")}
         </button>

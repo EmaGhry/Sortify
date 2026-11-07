@@ -93,7 +93,7 @@ export function CameraCapture({
           <span className="absolute -bottom-px -left-px size-6 rounded-bl-lg border-b-[3px] border-l-[3px] border-leaf" />
           <span className="absolute -bottom-px -right-px size-6 rounded-br-lg border-b-[3px] border-r-[3px] border-leaf" />
         </div>
-        <span className="absolute left-3 top-3 font-mono text-[9px] uppercase tracking-[0.2em] text-paper/80">
+        <span className="absolute left-3 top-3 font-semibold text-xs uppercase tracking-wider text-paper/80">
           SORTIFY CAM · 01
         </span>
       </div>
@@ -117,7 +117,7 @@ export function CameraCapture({
             </p>
             <button
               onClick={() => void start(facing)}
-              className="btn-press mt-4 border-[1.5px] border-ink bg-leaf px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.14em] text-paper shadow-hard-sm"
+              className="btn-press mt-4 border-[1.5px] border-ink bg-leaf px-4 py-2 text-xs font-bold uppercase tracking-wider text-paper shadow-hard-sm"
             >
               {t("scan.cameraRetry")}
             </button>
