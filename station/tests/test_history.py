@@ -9,6 +9,21 @@ from station.model import Prediction
 
 
 class HistoryTests(TestCase):
+    def test_other_is_counted_separately_from_old_rejections(self):
+        with TemporaryDirectory() as directory:
+            history = History(Path(directory) / "station.sqlite3")
+            classifier = Mock()
+            classifier.predict.side_effect = [
+                Prediction("other", "reject", 0.96),
+                Prediction("other", "other", 0.96),
+            ]
+            station = Station("preview", classifier, history=history)
+            for _ in range(2):
+                station.scan("image/jpeg", b"frame")
+            snapshot = history.snapshot()
+            self.assertEqual(snapshot["summary"]["other"], 1)
+            self.assertEqual([row["destination"] for row in snapshot["events"]], ["other", "reject"])
+
     def test_live_results_survive_restart_and_simulation_is_excluded(self):
         with TemporaryDirectory() as directory:
             path = Path(directory) / "station.sqlite3"

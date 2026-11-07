@@ -1,11 +1,14 @@
+from contextlib import redirect_stdout
+from io import StringIO
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 import unittest
+from unittest.mock import patch
 from urllib.request import Request, urlopen
 
 from station.__main__ import HOST, PORT, Station, make_handler
-from station.esp_link import Board, BoardError
+from station.esp_link import Board, BoardError, main as esp_link_main
 from station.model import HttpClassifier, ModelUnavailable
 
 
@@ -32,6 +35,9 @@ class StationTransportTests(unittest.TestCase):
 
             def do_GET(self):
                 test.requests.append((self.path, self.headers.get("X-Sortify-Bench")))
+                if self.path == "/health":
+                    self.send_error(404)
+                    return
                 material = self.path.rsplit("=", 1)[-1]
                 self.reply(test.board_reply or {"material": material})
 
@@ -54,11 +60,47 @@ class StationTransportTests(unittest.TestCase):
         self.assertEqual(result["hardware"], "acknowledged")
         self.assertEqual(result["model_source"], "network")
 
-    def test_below_threshold_uses_white_led_command(self):
+    def test_below_threshold_routes_to_other(self):
         self.prediction = {"label": "glass", "score": 0.4}
         result = self.station.scan("image/jpeg", b"frame")
-        self.assertEqual(result["destination"], "reject")
+        self.assertEqual(result["destination"], "other")
+        self.assertEqual(result["hardware"], "acknowledged")
         self.assertEqual(self.requests[-1], ("/sort?type=other", "1"))
+
+    def test_explicit_other_routes_to_its_compartment(self):
+        self.prediction = {"label": "other", "score": 0.9}
+        result = self.station.scan("image/jpeg", b"frame")
+        self.assertEqual(result["destination"], "other")
+        self.assertEqual(self.requests[-1], ("/sort?type=other", "1"))
+
+    def test_firmware_without_health_endpoint_receives_other(self):
+        self.board.check()
+        self.board.indicate("other")
+        self.assertEqual(self.requests, [("/sort?type=other", "1")])
+
+    def test_interactive_cli_repeats_commands_and_recovers_after_error(self):
+        output = StringIO()
+        inputs = iter(["invalid", "Hârtie / Carton", "PET", "PET", "altele"])
+
+        def read_material(_prompt):
+            command = next(inputs, None)
+            if command is None:
+                raise KeyboardInterrupt
+            self.board_reply = {"material": "glass"} if command.startswith("Hârtie") else None
+            return command
+
+        with patch("sys.argv", ["esp_link", "--url", f"http://{self.board.host}:{self.board.port}"]), \
+                patch("builtins.input", side_effect=read_material), redirect_stdout(output):
+            esp_link_main()
+        self.assertEqual(self.requests, [
+            ("/sort?type=paper", "1"),
+            ("/sort?type=plastic", "1"),
+            ("/sort?type=plastic", "1"),
+            ("/sort?type=other", "1"),
+        ])
+        self.assertIn("Material necunoscut", output.getvalue())
+        self.assertIn("Eroare ESP32", output.getvalue())
+        self.assertIn("ESP32 a confirmat other", output.getvalue())
 
     def test_model_error_does_not_trigger_hardware(self):
         self.prediction = {"label": "plastic", "score": "high"}

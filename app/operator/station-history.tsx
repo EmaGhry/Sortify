@@ -8,7 +8,8 @@ const materials = {
   metal: "Metal",
   plastic: "PET / plastic",
   paper: "Hârtie / carton",
-  reject: "Altele",
+  other: "Altele",
+  reject: "Respins (istoric)",
 };
 /** Aceleași culori ca LED-urile stației (vezi kiosk). */
 const colors: Record<keyof typeof materials, string> = {
@@ -16,7 +17,8 @@ const colors: Record<keyof typeof materials, string> = {
   metal: "#f87171",
   plastic: "#facc15",
   paper: "#60a5fa",
-  reject: "#f8fafc",
+  other: "#f8fafc",
+  reject: "#9ca3af",
 };
 const acknowledgements = {
   acknowledged: "Comandă confirmată",
@@ -32,7 +34,7 @@ type Event = {
   hardware: keyof typeof acknowledgements;
 };
 type Snapshot = {
-  summary: { total: number; previews: number; rejected: number; unconfirmed: number; acknowledged: number } | null;
+  summary: { total: number; previews: number; other: number; unconfirmed: number; acknowledged: number } | null;
   events: Event[];
 };
 const timeFormat = new Intl.DateTimeFormat("ro-RO", { dateStyle: "short", timeStyle: "medium" });
@@ -69,7 +71,7 @@ export function StationHistory() {
 
   const summary = snapshot?.summary;
   const events = snapshot?.events ?? [];
-  const recycled = summary ? summary.total - summary.rejected : 0;
+  const recycled = summary ? summary.total - summary.other : 0;
   const average = (pick: (event: Event) => number) =>
     events.length ? events.reduce((sum, event) => sum + pick(event), 0) / events.length : null;
   const avgScore = average((event) => event.score);
@@ -100,7 +102,7 @@ export function StationHistory() {
           <dl className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
             {[
               ["Scanări AI", summary.total, `${summary.previews} previzualizări`],
-              ["Rată de reciclare", summary.total ? `${Math.round((recycled / summary.total) * 100)}%` : "–", `${summary.rejected} obiecte neacceptate`],
+              ["Rată de reciclare", summary.total ? `${Math.round((recycled / summary.total) * 100)}%` : "–", `${summary.other} la Altele`],
               ["Încredere medie", avgScore === null ? "–" : `${Math.round(avgScore * 100)}%`, "ultimele scanări"],
               ["Confirmări ESP32", summary.acknowledged, `${summary.unconfirmed} neconfirmate`],
             ].map(([label, value, note]) => (

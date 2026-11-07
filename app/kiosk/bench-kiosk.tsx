@@ -8,7 +8,7 @@ const destinations = {
   metal: { name: "Metal", color: "#f87171", led: "roșu" },
   plastic: { name: "PET / plastic", color: "#facc15", led: "galben" },
   paper: { name: "Hârtie / carton", color: "#60a5fa", led: "albastru" },
-  reject: { name: "Altele", color: "#f8fafc", led: "alb" },
+  other: { name: "Altele", color: "#f8fafc", led: "alb" },
 } as const;
 
 const labels: Record<string, string> = {
@@ -272,7 +272,7 @@ export function BenchKiosk() {
           {choice && result ? (
             <>
               <div className="relative flex flex-1 flex-col justify-end overflow-hidden p-6 sm:p-8"
-                style={{ background: result.destination === "reject" ? undefined : choice.color }}>
+                style={{ background: result.destination === "other" ? undefined : choice.color }}>
                 <div aria-hidden className="crumple absolute inset-0" />
                 <p className="relative text-sm font-bold uppercase tracking-wider text-ink/80">
                   {result.mode === "simulation" ? "Rezultat simulat" : "Aruncă în containerul"}

@@ -1,11 +1,21 @@
 from http.client import HTTPConnection, HTTPException
 import json
+from socket import create_connection
 from urllib.parse import urlencode, urlsplit
 
 from .model import DESTINATIONS
 
 
 DEFAULT_ESP_URL = "http://192.168.4.1"
+MATERIAL_ALIASES = {
+    "sticla": "glass",
+    "pet": "plastic",
+    "pet/plastic": "plastic",
+    "hartie": "paper",
+    "carton": "paper",
+    "hartie/carton": "paper",
+    "altele": "other",
+}
 
 
 class BoardError(RuntimeError):
@@ -38,33 +48,50 @@ class Board:
             connection.close()
 
     def check(self):
-        if self._request("/health") != {"station": "sortify-bench", "version": 1}:
-            raise BoardError("The device did not report the expected Sortify firmware.")
+        try:
+            with create_connection((self.host, self.port or 80), timeout=2):
+                pass
+        except OSError as exc:
+            raise BoardError("Nu pot ajunge la ESP32. Verifică rețeaua Wi-Fi și adresa plăcii.") from exc
 
     def indicate(self, destination: str):
         if destination not in DESTINATIONS:
             raise ValueError("Invalid destination")
-        material = "other" if destination == "reject" else destination
-        if self._request("/sort?" + urlencode({"type": material})) != {"material": material}:
+        if self._request("/sort?" + urlencode({"type": destination})) != {"material": destination}:
             raise BoardError("ESP32 did not confirm the requested material.")
 
 
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description="Confirm each ESP32 destination with the servo unloaded.")
+    parser = argparse.ArgumentParser(description="Testeaza interactiv destinatiile ESP32, fara sarcina pe servo.")
     parser.add_argument("--url", default=DEFAULT_ESP_URL, help="ESP32 HTTP base URL")
     args = parser.parse_args()
     try:
         board = Board(args.url)
-        board.check()
-        for destination in DESTINATIONS:
-            input(f"Press Enter to indicate {destination} (Ctrl+C to stop): ")
-            board.indicate(destination)
-            print(f"ESP32 acknowledged {destination}. Check the LED and pointer visually.")
-    except (ValueError, BoardError) as exc:
+    except ValueError as exc:
         parser.exit(1, f"{exc}\n")
-    except KeyboardInterrupt:
+
+    choices = ", ".join(DESTINATIONS)
+    print(f"Alege materialul ({choices}). Merg si sticla, PET, hartie, carton si altele.")
+    print("Apasa Ctrl+C pentru oprire.")
+    try:
+        while True:
+            command = input("Material > ").strip().casefold().translate(str.maketrans("ăâ", "aa"))
+            command = command.replace(" ", "")
+            if not command:
+                continue
+            destination = MATERIAL_ALIASES.get(command, command)
+            if destination not in DESTINATIONS:
+                print(f"Material necunoscut. Alege dintre {choices}.")
+                continue
+            try:
+                board.indicate(destination)
+            except BoardError as exc:
+                print(f"Eroare ESP32: {exc}")
+                continue
+            print(f"ESP32 a confirmat {destination}. Verifica LED-ul si pozitia servo-ului.")
+    except (KeyboardInterrupt, EOFError):
         print()
 
 
