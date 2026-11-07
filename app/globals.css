@@ -71,7 +71,7 @@ body {
 
 /* ── Print-style surfaces ─────────────────────────────────────────── */
 .card-print {
-  @apply border-[1.5px] border-ink bg-paper2;
+  @apply border-[1.5px] border-ink;
 }
 
 .shadow-hard {
@@ -117,10 +117,26 @@ body {
   }
 }
 
-/* Paper dot-grid texture (fixed layer only — no repaint cost) */
-.dotgrid {
-  background-image: radial-gradient(rgba(28, 43, 33, 0.09) 1px, transparent 1px);
-  background-size: 22px 22px;
+/* Crumpled-paper texture: SVG noise lit from the top-left, multiplied over the paper colour */
+:root {
+  --crumple: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.006 0.009' numOctaves='5' seed='11' stitchTiles='stitch'/%3E%3CfeDiffuseLighting lighting-color='%23fff' surfaceScale='4.5'%3E%3CfeDistantLight azimuth='225' elevation='46'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+}
+
+.crumple {
+  background-image: var(--crumple);
+  background-size: 900px 900px;
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+}
+
+/* A sheet of crumpled paper, for cards and panels (offset tile so cards don't line up with the page) */
+.paper-sheet,
+.card-print {
+  background-color: var(--color-paper2);
+  background-image: linear-gradient(rgba(252, 250, 244, 0.22), rgba(252, 250, 244, 0.22)), var(--crumple);
+  background-size: auto, 700px 700px;
+  background-position: 0 0, 37% 61%;
+  background-blend-mode: normal, multiply;
 }
 
 .scrollbar-hide {

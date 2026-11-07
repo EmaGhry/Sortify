@@ -19,7 +19,7 @@ export function RecentScans({ scans }: { scans: StoredScan[] }) {
         </Link>
       </div>
       {scans.length === 0 ? (
-        <p className="card-print rounded-lg px-4 py-5 font-mono text-xs text-ink-soft">{t("scan.recentEmpty")}</p>
+        <p className="card-print px-4 py-5 font-mono text-xs text-ink-soft">{t("scan.recentEmpty")}</p>
       ) : (
         <div className="scrollbar-hide -mx-1 flex gap-3 overflow-x-auto px-1 pb-1 pt-1">
           {scans.slice(0, 12).map((scan, idx) => {
@@ -28,7 +28,7 @@ export function RecentScans({ scans }: { scans: StoredScan[] }) {
               <Link
                 key={scan.id}
                 href="/history"
-                className="card-print flex w-36 shrink-0 flex-col gap-2 rounded-lg p-2.5 transition-transform hover:-translate-y-0.5"
+                className="card-print flex w-36 shrink-0 flex-col gap-2 p-2.5 transition-transform hover:-translate-y-0.5"
                 title={scan.itemName}
               >
                 {scan.thumb ? (

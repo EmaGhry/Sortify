@@ -75,7 +75,7 @@ export function CameraCapture({
   }, [facing, onCapture, stopStream]);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border-[1.5px] border-ink shadow-hard">
+    <div className="relative overflow-hidden border-[1.5px] border-ink shadow-hard">
       <video
         ref={videoRef}
         autoPlay
@@ -86,8 +86,8 @@ export function CameraCapture({
 
       {/* framing guides */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-x-10 top-1/2 -translate-y-1/2 aspect-square rounded-lg border-2 border-dashed border-paper/40 shadow-[0_0_0_100vmax_rgba(16,22,15,0.35)]" />
-        <div className="absolute inset-x-10 top-1/2 -translate-y-1/2 aspect-square rounded-lg animate-pulse-soft">
+        <div className="absolute inset-x-10 top-1/2 -translate-y-1/2 aspect-square border-2 border-dashed border-paper/40 shadow-[0_0_0_100vmax_rgba(16,22,15,0.35)]" />
+        <div className="absolute inset-x-10 top-1/2 -translate-y-1/2 aspect-square animate-pulse-soft">
           <span className="absolute -top-px -left-px size-6 rounded-tl-lg border-t-[3px] border-l-[3px] border-leaf" />
           <span className="absolute -top-px -right-px size-6 rounded-tr-lg border-t-[3px] border-r-[3px] border-leaf" />
           <span className="absolute -bottom-px -left-px size-6 rounded-bl-lg border-b-[3px] border-l-[3px] border-leaf" />
@@ -101,15 +101,15 @@ export function CameraCapture({
       <button
         onClick={onClose}
         aria-label={t("common.close")}
-        className="absolute right-3 top-3 grid size-9 place-items-center rounded-md border-[1.5px] border-ink bg-paper2 text-ink shadow-hard-sm btn-press"
+        className="absolute right-3 top-3 grid size-9 place-items-center border-[1.5px] border-ink bg-paper2 text-ink shadow-hard-sm btn-press"
       >
         <X className="size-4" strokeWidth={2.4} />
       </button>
 
       {error ? (
-        <div className="absolute inset-4 grid place-items-center rounded-lg border-[1.5px] border-ink bg-paper2 px-6 text-center">
+        <div className="absolute inset-4 grid place-items-center border-[1.5px] border-ink bg-paper2 px-6 text-center">
           <div className="animate-fade-up">
-            <span className="mx-auto grid size-12 place-items-center rounded-md border-[1.5px] border-ink bg-danger/15 text-danger">
+            <span className="mx-auto grid size-12 place-items-center border-[1.5px] border-ink bg-danger/15 text-danger">
               <CameraOff className="size-6" />
             </span>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
@@ -117,7 +117,7 @@ export function CameraCapture({
             </p>
             <button
               onClick={() => void start(facing)}
-              className="btn-press mt-4 rounded-md border-[1.5px] border-ink bg-leaf px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.14em] text-paper shadow-hard-sm"
+              className="btn-press mt-4 border-[1.5px] border-ink bg-leaf px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.14em] text-paper shadow-hard-sm"
             >
               {t("scan.cameraRetry")}
             </button>
@@ -134,14 +134,14 @@ export function CameraCapture({
           <button
             onClick={() => setFacing((f) => (f === "environment" ? "user" : "environment"))}
             aria-label="Switch camera"
-            className="grid size-11 place-items-center rounded-md border-[1.5px] border-paper/70 bg-[#10160f]/60 text-paper backdrop-blur transition hover:bg-[#10160f]/80"
+            className="grid size-11 place-items-center border-[1.5px] border-paper/70 bg-[#10160f]/60 text-paper backdrop-blur transition hover:bg-[#10160f]/80"
           >
             <SwitchCamera className="size-5" strokeWidth={1.8} />
           </button>
           <button
             onClick={() => void capture()}
             aria-label={t("scan.capture")}
-            className="grid size-16 place-items-center rounded-md border-[2px] border-paper bg-leaf text-paper shadow-hard-sm transition hover:brightness-110 active:scale-95"
+            className="grid size-16 place-items-center border-[2px] border-paper bg-leaf text-paper shadow-hard-sm transition hover:brightness-110 active:scale-95"
           >
             <ScanLine className="size-7" strokeWidth={2.2} />
           </button>

@@ -20,7 +20,7 @@ export function ScanResultCard({
   const confidencePct = Math.round(result.confidence * 100);
 
   return (
-    <section className="card-print shadow-hard animate-fade-up rounded-xl p-5 sm:p-6" aria-live="polite">
+    <section className="card-print shadow-hard animate-fade-up p-5 sm:p-6" aria-live="polite">
       {/* Header */}
       <div className="reveal-item flex items-start gap-4" style={{ "--d": "30ms" } as React.CSSProperties}>
         <MaterialIcon material={result.material} size="lg" />
@@ -28,18 +28,18 @@ export function ScanResultCard({
           <div className="flex flex-wrap items-center gap-2">
             {/* material stamp */}
             <span
-              className="-rotate-1 rounded-md border-[1.5px] border-ink px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em]"
+              className="-rotate-1 border-[1.5px] border-ink px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em]"
               style={{ backgroundColor: `${profile.bin.color}55` }}
             >
               {profile.label[lang]}
             </span>
             {result.demo ? (
-              <span className="rotate-1 rounded-md border-[1.5px] border-ink bg-ink px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-paper">
+              <span className="rotate-1 border-[1.5px] border-ink bg-ink px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-paper">
                 {t("result.demoBadge")}
               </span>
             ) : null}
           </div>
-          <h2 className="mt-2 font-display text-2xl font-bold leading-tight capitalize sm:text-3xl">
+          <h2 className="mt-2 font-display text-2xl leading-tight capitalize sm:text-3xl">
             {result.itemName}
           </h2>
           {result.reasoning ? (
@@ -58,20 +58,20 @@ export function ScanResultCard({
 
       {/* Bin */}
       <div
-        className="reveal-item mt-5 flex items-center gap-3.5 rounded-lg border-[1.5px] border-ink bg-paper p-4"
+        className="reveal-item mt-5 flex items-center gap-3.5 border-[1.5px] border-ink bg-paper p-4"
         style={{ "--d": "90ms" } as React.CSSProperties}
       >
         <span
-          className="size-10 shrink-0 rounded-md border-[1.5px] border-ink"
+          className="size-10 shrink-0 border-[1.5px] border-ink"
           style={{ backgroundColor: profile.bin.color }}
           aria-hidden
         />
         <div className="min-w-0">
           <p className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ink-soft">{t("result.bin")}</p>
-          <p className="font-display text-lg font-bold leading-tight">{result.binLabel || profile.bin.label[lang]}</p>
+          <p className="font-display text-lg leading-tight">{result.binLabel || profile.bin.label[lang]}</p>
         </div>
         {!result.recyclable ? (
-          <span className="ml-auto flex shrink-0 items-center gap-1.5 rounded-md border-[1.5px] border-ink bg-danger/12 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-danger">
+          <span className="ml-auto flex shrink-0 items-center gap-1.5 border-[1.5px] border-ink bg-danger/12 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-danger">
             <XCircle className="size-3.5" />
             {t("result.notRecyclable")}
           </span>
@@ -115,7 +115,7 @@ export function ScanResultCard({
       {/* Eco fact */}
       {result.ecoFact ? (
         <div
-          className="reveal-item mt-5 flex items-start gap-3 rounded-lg border-[1.5px] border-ink border-l-4 border-l-leaf bg-paper p-3.5"
+          className="reveal-item mt-5 flex items-start gap-3 border-[1.5px] border-ink border-l-4 border-l-leaf bg-paper p-3.5"
           style={{ "--d": "210ms" } as React.CSSProperties}
         >
           <Lightbulb className="mt-0.5 size-4.5 shrink-0 text-leaf" />
@@ -131,15 +131,15 @@ export function ScanResultCard({
         className="reveal-item mt-5 flex flex-wrap items-center gap-2.5"
         style={{ "--d": "260ms" } as React.CSSProperties}
       >
-        <span className="flex items-center gap-2 rounded-md border-[1.5px] border-ink bg-paper px-3 py-1.5 font-mono text-xs font-bold">
+        <span className="flex items-center gap-2 border-[1.5px] border-ink bg-paper px-3 py-1.5 font-mono text-xs font-bold">
           {t("result.co2")}: <span className="text-leaf">{formatGrams(result.co2SavedG, lang)}</span>
         </span>
-        <span className="flex items-center gap-2 rounded-md border-[1.5px] border-ink bg-paper px-3 py-1.5 font-mono text-xs font-bold">
+        <span className="flex items-center gap-2 border-[1.5px] border-ink bg-paper px-3 py-1.5 font-mono text-xs font-bold">
           {t("result.points")}: <span className="text-leaf">+{result.points}</span>
         </span>
         <button
           onClick={onScanAgain}
-          className="btn-press ml-auto rounded-md border-[1.5px] border-ink bg-leaf px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.14em] text-paper shadow-hard-sm"
+          className="btn-press ml-auto border-[1.5px] border-ink bg-leaf px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.14em] text-paper shadow-hard-sm"
         >
           {t("result.scanAgain")}
         </button>
