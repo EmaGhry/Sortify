@@ -79,22 +79,22 @@ export function ImpactClient() {
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6 sm:py-14">
       <div className="mb-8 max-w-xl">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.24em] text-leaf">
+        <p className=" text-xs font-bold uppercase tracking-wider text-leaf">
           {t("impact.kicker")}
         </p>
-        <h1 className="mt-2 font-display text-4xl font-black leading-[0.98] tracking-tight sm:text-6xl">
+        <h1 className="mt-2 font-display text-4xl leading-[0.98] tracking-tight sm:text-6xl">
           {t("impact.title")}
         </h1>
         <p className="mt-4 text-base leading-relaxed text-ink-soft">{t("impact.subtitle")}</p>
       </div>
 
       {ready && noData ? (
-        <div className="card-print grid place-items-center rounded-xl py-20 text-center">
+        <div className="card-print grid place-items-center py-20 text-center">
           <div>
-            <span className="mx-auto grid size-14 -rotate-2 place-items-center rounded-lg border-[1.5px] border-ink bg-leaf/12">
+            <span className="mx-auto grid size-14 -rotate-2 place-items-center border-[1.5px] border-ink bg-leaf/12">
               <Leaf className="size-7 text-leaf" />
             </span>
-            <p className="mt-4 max-w-sm font-mono text-xs uppercase leading-relaxed tracking-[0.14em] text-ink-soft">
+            <p className="mt-4 max-w-sm font-semibold text-xs uppercase leading-relaxed tracking-wider text-ink-soft">
               {t("impact.noData")}
             </p>
           </div>
@@ -102,7 +102,7 @@ export function ImpactClient() {
       ) : (
         <div className="space-y-8">
           {/* Spec-sheet stat strip */}
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border-[1.5px] border-ink bg-ink/25 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-px overflow-hidden border-[1.5px] border-ink bg-ink/25 lg:grid-cols-4">
             <StatCell label={t("impact.scans")} value={String(stats.total)} icon={Recycle} />
             <StatCell label={t("impact.co2")} value={formatGrams(stats.co2TotalG, lang)} icon={Leaf} highlight />
             <StatCell
@@ -119,32 +119,32 @@ export function ImpactClient() {
 
           <div className="grid gap-8 lg:grid-cols-[1fr_1.25fr]">
             {/* Level + punch card */}
-            <section className="card-print rounded-xl p-6">
+            <section className="card-print p-6">
               <div className="flex items-center gap-5">
                 <Ring progress={progress} size={104} stroke={9} id="level-ring">
                   <div className="text-center">
                     <p className="font-mono text-2xl font-bold">{stats.pointsTotal}</p>
-                    <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-ink-soft">{t("common.xp")}</p>
+                    <p className="font-semibold text-xs uppercase tracking-wider text-ink-soft">{t("common.xp")}</p>
                   </div>
                 </Ring>
                 <div>
-                  <p className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ink-soft">
+                  <p className=" text-xs font-bold uppercase tracking-wider text-ink-soft">
                     {t("impact.level")}
                   </p>
-                  <p className="font-display text-2xl font-bold leading-tight">{level.name[lang]}</p>
+                  <p className="font-display text-2xl leading-tight">{level.name[lang]}</p>
                   {next ? (
                     <p className="mt-1.5 font-mono text-[11px] text-ink-soft">
                       {Math.max(0, next.min - stats.pointsTotal)} XP → {next.name[lang]}
                     </p>
                   ) : (
-                    <p className="mt-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-leaf">MAX</p>
+                    <p className="mt-1.5 text-xs font-bold uppercase tracking-wider text-leaf">MAX</p>
                   )}
                 </div>
               </div>
 
               {/* Punch card */}
               <div className="mt-7">
-                <p className="mb-2.5 border-b-[1.5px] border-ink pb-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em]">
+                <p className="mb-2.5 border-b-[1.5px] border-ink pb-1.5 text-xs font-bold uppercase tracking-wider">
                   {t("impact.streakTitle")}
                 </p>
                 <div className="flex gap-1.5">
@@ -159,15 +159,15 @@ export function ImpactClient() {
                     />
                   ))}
                 </div>
-                <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.16em] text-ink-soft">
+                <p className="mt-2 font-semibold text-xs uppercase tracking-wider text-ink-soft">
                   {t("impact.streak")}: {stats.streakDays} {t("impact.days")}
                 </p>
               </div>
             </section>
 
             {/* Equivalents ledger */}
-            <section className="card-print overflow-hidden rounded-xl">
-              <h2 className="border-b-[1.5px] border-ink bg-paper px-6 py-3.5 font-display text-lg font-bold">
+            <section className="card-print overflow-hidden">
+              <h2 className="border-b-[1.5px] border-ink bg-paper px-6 py-3.5 font-display text-lg">
                 {t("impact.equivalents")}
               </h2>
               <div className="divide-y divide-ink/15">
@@ -178,7 +178,7 @@ export function ImpactClient() {
                     const Icon = EQUIV_ICONS[eq.icon];
                     return (
                       <div key={eq.id} className="flex items-center gap-4 px-6 py-4">
-                        <span className="grid size-10 shrink-0 place-items-center rounded-md border-[1.5px] border-ink bg-leaf/12">
+                        <span className="grid size-10 shrink-0 place-items-center border-[1.5px] border-ink bg-leaf/12">
                           <Icon className="size-5 text-leaf" strokeWidth={2} />
                         </span>
                         <p className="text-sm leading-snug">
@@ -194,8 +194,8 @@ export function ImpactClient() {
           </div>
 
           {/* Distribution */}
-          <section className="card-print overflow-hidden rounded-xl">
-            <h2 className="border-b-[1.5px] border-ink bg-paper px-6 py-3.5 font-display text-lg font-bold">
+          <section className="card-print overflow-hidden">
+            <h2 className="border-b-[1.5px] border-ink bg-paper px-6 py-3.5 font-display text-lg">
               {t("impact.distribution")}
             </h2>
             <div className="space-y-3 px-6 py-5">
@@ -205,7 +205,7 @@ export function ImpactClient() {
                 return (
                   <div key={m} className="flex items-center gap-3.5">
                     <MaterialIcon material={m} size="sm" />
-                    <span className="w-28 shrink-0 font-mono text-[10px] font-bold uppercase tracking-[0.12em] sm:w-36">
+                    <span className="w-28 shrink-0 text-xs font-bold uppercase tracking-wider sm:w-36">
                       {profile.label[lang]}
                     </span>
                     <div className="h-3.5 flex-1 rounded-[3px] border-[1.5px] border-ink bg-paper2">
@@ -227,8 +227,8 @@ export function ImpactClient() {
           {/* Badge stamps */}
           <section>
             <div className="mb-4 flex items-center justify-between border-b-[1.5px] border-ink pb-2.5">
-              <h2 className="font-display text-lg font-bold">{t("impact.badges")}</h2>
-              <span className="rounded-md border-[1.5px] border-ink bg-leaf px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-paper">
+              <h2 className="font-display text-lg">{t("impact.badges")}</h2>
+              <span className="border-[1.5px] border-ink bg-leaf px-3 py-1 text-xs font-bold uppercase tracking-wider text-paper">
                 {state.badges.length}/{BADGES.length} {t("impact.badgesUnlocked")}
               </span>
             </div>
@@ -240,14 +240,14 @@ export function ImpactClient() {
                   <div
                     key={badge.id}
                     className={cn(
-                      "rounded-lg border-[1.5px] p-4 transition-transform hover:-translate-y-0.5",
+                      "border-[1.5px] p-4 transition-transform hover:-translate-y-0.5",
                       unlocked ? "border-ink bg-leaf/10 shadow-hard-sm" : "border-dashed border-ink/40 bg-paper2",
                     )}
                     style={unlocked ? { transform: `rotate(${i % 2 === 0 ? -0.8 : 0.8}deg)` } : undefined}
                   >
                     <span
                       className={cn(
-                        "grid size-10 place-items-center rounded-md border-[1.5px]",
+                        "grid size-10 place-items-center border-[1.5px]",
                         unlocked ? "border-ink bg-ink text-paper" : "border-ink/30 bg-paper text-ink-soft",
                       )}
                     >
@@ -281,14 +281,14 @@ function StatCell({
     <div className="bg-paper2 p-5">
       <span
         className={cn(
-          "mb-3 grid size-9 place-items-center rounded-md border-[1.5px] border-ink",
+          "mb-3 grid size-9 place-items-center border-[1.5px] border-ink",
           highlight ? "bg-leaf text-paper" : "bg-paper text-leaf",
         )}
       >
         <Icon className="size-4.5" strokeWidth={2.2} />
       </span>
       <p className={cn("font-mono text-2xl font-bold sm:text-3xl", highlight && "text-leaf")}>{value}</p>
-      <p className="mt-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ink-soft">{label}</p>
+      <p className="mt-1 text-xs font-bold uppercase tracking-wider text-ink-soft">{label}</p>
     </div>
   );
 }

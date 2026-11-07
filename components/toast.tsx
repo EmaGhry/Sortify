@@ -31,7 +31,7 @@ export function ToastStack({ toasts }: { toasts: ToastInput[] }) {
         <div
           key={t.id}
           className={cn(
-            "card-print shadow-hard-sm animate-fade-up pointer-events-auto flex items-start gap-3 rounded-lg px-4 py-3",
+            "card-print shadow-hard-sm animate-fade-up pointer-events-auto flex items-start gap-3 px-4 py-3",
             VARIANT_STYLES[t.variant ?? "info"],
           )}
         >

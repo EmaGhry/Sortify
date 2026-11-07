@@ -187,10 +187,10 @@ export function ScanPageClient() {
       {/* Asymmetric hero */}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-6 md:mb-10">
         <div className="max-w-xl">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.24em] text-leaf">
+          <p className=" text-xs font-bold uppercase tracking-wider text-leaf">
             {t("scan.kicker")}
           </p>
-          <h1 className="mt-2 font-display text-4xl font-black leading-[0.98] tracking-tight sm:text-6xl">
+          <h1 className="mt-2 font-display text-4xl leading-[0.98] tracking-tight sm:text-6xl">
             {t("scan.title")}
           </h1>
           <p className="mt-4 max-w-md text-base leading-relaxed text-ink-soft">
@@ -199,11 +199,11 @@ export function ScanPageClient() {
         </div>
         <div className="flex items-center gap-2.5 pb-1">
           {live === false ? (
-            <span className="flex items-center gap-2 rounded-md border-[1.5px] border-ink bg-warning/12 px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-warning">
+            <span className="flex items-center gap-2 border-[1.5px] border-ink bg-warning/12 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-warning">
               <WifiOff className="size-3.5" /> {t("common.demo")}
             </span>
           ) : live ? (
-            <span className="flex items-center gap-2 rounded-md border-[1.5px] border-ink bg-leaf px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-paper">
+            <span className="flex items-center gap-2 border-[1.5px] border-ink bg-leaf px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-paper">
               <ShieldCheck className="size-3.5" /> {t("scan.liveReady")}
             </span>
           ) : null}
@@ -211,11 +211,11 @@ export function ScanPageClient() {
       </div>
 
       {live === false ? (
-        <div className="mb-7 flex flex-wrap items-center justify-between gap-2 rounded-lg border-[1.5px] border-ink bg-warning/10 px-4 py-3 animate-fade-up">
+        <div className="mb-7 flex flex-wrap items-center justify-between gap-2 border-[1.5px] border-ink bg-warning/10 px-4 py-3 animate-fade-up">
           <p className="font-mono text-xs leading-relaxed text-ink">{t("scan.demoBanner")}</p>
           <button
             onClick={() => void runDemo()}
-            className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-leaf underline underline-offset-4 hover:brightness-110"
+            className=" text-xs font-bold uppercase tracking-wider text-leaf underline underline-offset-4 hover:brightness-110"
           >
             {t("scan.tryExample")} →
           </button>
@@ -223,7 +223,7 @@ export function ScanPageClient() {
       ) : null}
 
       {/* Spec-sheet stat strip */}
-      <div className="mb-8 grid grid-cols-3 gap-px overflow-hidden rounded-lg border-[1.5px] border-ink bg-ink/25">
+      <div className="mb-8 grid grid-cols-3 gap-px overflow-hidden border-[1.5px] border-ink bg-ink/25">
         <SpecCell label={t("impact.scans")} value={String(stats.total)} />
         <SpecCell label={t("impact.co2")} value={formatGrams(stats.co2TotalG, lang)} highlight />
         <SpecCell label={t("common.xp")} value={String(stats.pointsTotal)} />
@@ -285,7 +285,7 @@ function SpecCell({ label, value, highlight }: { label: string; value: string; h
   return (
     <div className="bg-paper2 px-4 py-4 sm:px-6">
       <p className={cn("font-mono text-2xl font-bold sm:text-3xl", highlight && "text-leaf")}>{value}</p>
-      <p className="mt-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ink-soft">{label}</p>
+      <p className="mt-1 text-xs font-bold uppercase tracking-wider text-ink-soft">{label}</p>
     </div>
   );
 }
@@ -303,36 +303,36 @@ function IdlePanel({
 }) {
   const { t } = useI18n();
   return (
-    <div className="card-print shadow-hard flex flex-col items-center gap-6 rounded-xl p-8 text-center">
+    <div className="card-print shadow-hard flex flex-col items-center gap-6 p-8 text-center">
       <div className="relative">
-        <span className="grid size-20 -rotate-2 place-items-center rounded-xl border-[1.5px] border-ink bg-leaf shadow-hard-sm animate-pulse-soft">
+        <span className="grid size-20 -rotate-2 place-items-center border-[1.5px] border-ink bg-leaf shadow-hard-sm animate-pulse-soft">
           <ScanLine className="size-10 text-paper" strokeWidth={2} />
         </span>
-        <span className="absolute -right-3 -top-2 rotate-6 rounded-md border-[1.5px] border-ink bg-paper2 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.14em]">
+        <span className="absolute -right-3 -top-2 rotate-6 border-[1.5px] border-ink bg-paper2 px-2 py-0.5 text-xs font-bold uppercase tracking-wider">
           AI
         </span>
       </div>
       <button
         onClick={onStartCamera}
-        className="btn-press w-full rounded-lg border-[1.5px] border-ink bg-leaf px-6 py-4 font-mono text-sm font-bold uppercase tracking-[0.18em] text-paper shadow-hard"
+        className="btn-press w-full border-[1.5px] border-ink bg-leaf px-6 py-4 text-sm font-bold uppercase tracking-wider text-paper shadow-hard"
       >
         {t("scan.startCamera")}
       </button>
       <div className="flex w-full flex-col gap-2.5 sm:flex-row">
         <button
           onClick={onUploadClick}
-          className="btn-press flex flex-1 items-center justify-center gap-2 rounded-lg border-[1.5px] border-ink bg-paper2 px-4 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] shadow-hard-sm"
+          className="btn-press flex flex-1 items-center justify-center gap-2 border-[1.5px] border-ink bg-paper2 px-4 py-3 text-xs font-bold uppercase tracking-wider shadow-hard-sm"
         >
           <Upload className="size-4" strokeWidth={2.2} /> {t("scan.upload")}
         </button>
         <button
           onClick={onDemo}
-          className="btn-press flex flex-1 items-center justify-center gap-2 rounded-lg border-[1.5px] border-ink bg-paper2 px-4 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] shadow-hard-sm"
+          className="btn-press flex flex-1 items-center justify-center gap-2 border-[1.5px] border-ink bg-paper2 px-4 py-3 text-xs font-bold uppercase tracking-wider shadow-hard-sm"
         >
           <ImagePlus className="size-4 text-leaf" strokeWidth={2.2} /> {t("scan.tryExample")}
         </button>
       </div>
-      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{t("scan.uploadHint")}</p>
+      <p className="font-semibold text-xs uppercase tracking-wider text-ink-soft">{t("scan.uploadHint")}</p>
     </div>
   );
 }
@@ -354,7 +354,7 @@ function PreviewPanel({
 }) {
   const { t } = useI18n();
   return (
-    <div className="card-print shadow-hard animate-fade-up overflow-hidden rounded-xl">
+    <div className="card-print shadow-hard animate-fade-up overflow-hidden">
       <div className="relative">
         {imageData ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -368,9 +368,9 @@ function PreviewPanel({
             <span className="scan-sweep absolute inset-0" aria-hidden>
               <span className="absolute inset-x-6 top-1/2 h-10 -translate-y-1/2 bg-gradient-to-b from-transparent via-leaf/35 to-transparent" />
             </span>
-            <div className="relative flex w-64 flex-col items-center gap-3 rounded-lg border-[1.5px] border-paper/40 bg-paper2 px-5 py-4 text-center shadow-hard-sm">
+            <div className="relative flex w-64 flex-col items-center gap-3 border-[1.5px] border-paper/40 bg-paper2 px-5 py-4 text-center shadow-hard-sm">
               <LoaderCircle className="size-7 animate-spin text-leaf" strokeWidth={2.2} />
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.14em]">{stepText}</p>
+              <p className=" text-xs font-bold uppercase tracking-wider">{stepText}</p>
               <div className="flex gap-1.5">
                 {STEP_KEYS.map((_, i) => (
                   <span
@@ -390,14 +390,14 @@ function PreviewPanel({
         <button
           onClick={onAnalyze}
           disabled={busy}
-          className="btn-press flex-1 rounded-md border-[1.5px] border-ink bg-leaf px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.18em] text-paper shadow-hard-sm disabled:opacity-50"
+          className="btn-press flex-1 border-[1.5px] border-ink bg-leaf px-5 py-3 text-xs font-bold uppercase tracking-wider text-paper shadow-hard-sm disabled:opacity-50"
         >
           {busy ? t("scan.analyzing") : t("scan.analyze")}
         </button>
         <button
           onClick={onRetake}
           disabled={busy}
-          className="btn-press rounded-md border-[1.5px] border-ink bg-paper2 px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.14em] shadow-hard-sm disabled:opacity-50"
+          className="btn-press border-[1.5px] border-ink bg-paper2 px-5 py-3 text-xs font-bold uppercase tracking-wider shadow-hard-sm disabled:opacity-50"
         >
           {t("scan.retake")}
         </button>
@@ -417,26 +417,26 @@ function ResultPreview({
 }) {
   const { t } = useI18n();
   return (
-    <div className="card-print shadow-hard animate-fade-up overflow-hidden rounded-xl">
+    <div className="card-print shadow-hard animate-fade-up overflow-hidden">
       <div className="relative">
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={image} alt="" className="aspect-[4/3] w-full object-cover" />
         ) : (
           <div className="grid aspect-[4/3] w-full place-items-center bg-paper">
-            <span className="grid size-16 -rotate-2 place-items-center rounded-xl border-[1.5px] border-ink bg-leaf/12">
+            <span className="grid size-16 -rotate-2 place-items-center border-[1.5px] border-ink bg-leaf/12">
               <ScanLine className="size-8 text-leaf" />
             </span>
           </div>
         )}
-        <span className="absolute bottom-3 left-3 rotate-[-1deg] rounded-md border-[1.5px] border-ink bg-ink px-3 py-1.5 font-mono text-xs font-bold text-paper">
+        <span className="absolute bottom-3 left-3 rotate-[-1deg] border-[1.5px] border-ink bg-ink px-3 py-1.5 font-mono text-xs font-bold text-paper">
           +{result.points} {t("common.points")}
         </span>
       </div>
       <div className="border-t-[1.5px] border-ink bg-paper2 p-4">
         <button
           onClick={onScanAgain}
-          className="btn-press w-full rounded-md border-[1.5px] border-ink bg-leaf px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.18em] text-paper shadow-hard-sm"
+          className="btn-press w-full border-[1.5px] border-ink bg-leaf px-5 py-3 text-xs font-bold uppercase tracking-wider text-paper shadow-hard-sm"
         >
           {t("result.scanAgain")}
         </button>
@@ -450,14 +450,14 @@ function PlaceholderPanel() {
   const steps = [t("scan.step1"), t("scan.step2"), t("scan.step3")];
 
   return (
-    <div className="card-print flex h-full min-h-[22rem] flex-col justify-center rounded-xl p-6 sm:p-7">
+    <div className="card-print flex h-full min-h-[22rem] flex-col justify-center p-6 sm:p-7">
       <div className="mb-5 flex items-center gap-3.5 border-b-[1.5px] border-ink pb-4">
-        <span className="grid size-11 -rotate-2 place-items-center rounded-md border-[1.5px] border-ink bg-leaf/12">
+        <span className="grid size-11 -rotate-2 place-items-center border-[1.5px] border-ink bg-leaf/12">
           <ScanLine className="size-5 text-leaf" />
         </span>
         <div>
-          <h2 className="font-display text-xl font-bold">{t("scan.title")}</h2>
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">{t("app.tagline")}</p>
+          <h2 className="font-display text-xl">{t("scan.title")}</h2>
+          <p className="font-semibold text-xs uppercase tracking-wider text-ink-soft">{t("app.tagline")}</p>
         </div>
       </div>
       <ol className="space-y-3">
@@ -474,7 +474,7 @@ function PlaceholderPanel() {
           return (
             <span
               key={m}
-              className="rounded-md border-[1.5px] border-ink px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em]"
+              className="border-[1.5px] border-ink px-2 py-1 text-xs font-bold uppercase tracking-wider"
               style={{ backgroundColor: `${profile.bin.color}40` }}
             >
               {profile.label[lang]}

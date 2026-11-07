@@ -56,24 +56,24 @@ export function StationHome() {
 
   return (
     <div lang={language} className="mx-auto max-w-[1200px] px-4 pb-14 pt-8 sm:px-6 sm:pt-12">
-      <section className="grid overflow-hidden border-[1.5px] border-ink bg-[#10221a] text-white lg:grid-cols-[0.95fr_1.05fr]">
+      <section className="paper-sheet grid overflow-hidden border-[1.5px] border-ink text-ink shadow-hard lg:grid-cols-[0.95fr_1.05fr]">
         <div className="flex flex-col justify-center px-6 py-9 sm:px-10 sm:py-12">
-          <p className="font-mono text-xs font-semibold uppercase tracking-widest text-emerald-300">{content.eyebrow}</p>
+          <p className="font-semibold text-xs uppercase tracking-wider text-leaf">{content.eyebrow}</p>
           <h1 className="mt-4 max-w-xl font-display text-4xl leading-[1.03] tracking-tight sm:text-5xl xl:text-6xl">{content.title}</h1>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-emerald-50/90">{content.introduction}</p>
+          <p className="mt-5 max-w-md text-base leading-relaxed text-ink-soft">{content.introduction}</p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/kiosk" className="inline-flex items-center gap-2 bg-emerald-300 px-4 py-3 text-sm font-bold text-ink hover:bg-emerald-200">
+            <Link href="/kiosk" className="btn-press inline-flex items-center gap-2 border-[1.5px] border-ink bg-leaf-deep px-5 py-3 text-sm font-bold text-paper shadow-hard-sm hover:bg-leaf">
               {content.kiosk}<ArrowRight aria-hidden className="size-4" />
             </Link>
-            <Link href="/operator" className="border border-white/35 px-4 py-3 text-sm font-bold hover:bg-white/10">{content.operator}</Link>
+            <Link href="/operator" className="btn-press border-[1.5px] border-ink bg-paper2 px-4 py-3 text-sm font-bold shadow-hard-sm hover:bg-paper">{content.operator}</Link>
           </div>
-          <p className="mt-4 max-w-sm text-xs leading-relaxed text-emerald-100">{content.local}</p>
+          <p className="mt-4 max-w-sm text-xs leading-relaxed text-ink-soft">{content.local}</p>
         </div>
-        <figure className="relative min-h-60 border-t border-white/20 sm:min-h-80 lg:border-l lg:border-t-0">
+        <figure className="relative min-h-60 border-t-[1.5px] border-ink sm:min-h-80 lg:border-l-[1.5px] lg:border-t-0">
           <Image src="/station-concept.png" alt={content.imageAlt} fill preload
             sizes="(min-width: 1280px) 610px, (min-width: 1024px) 52vw, 100vw"
             className="object-cover object-center" />
-          <figcaption className="absolute bottom-3 left-3 bg-[#10221a] px-3 py-2 font-mono text-xs text-emerald-50">{content.concept}</figcaption>
+          <figcaption className="absolute bottom-3 left-3 border-[1.5px] border-ink bg-paper2 px-3 py-2 font-mono text-xs text-ink">{content.concept}</figcaption>
         </figure>
       </section>
 
@@ -84,7 +84,7 @@ export function StationHome() {
           {content.steps.map(([number, title, description], index) => {
             const Icon = icons[index];
             return (
-              <li key={number} className="border-[1.5px] border-ink bg-paper2 p-5">
+              <li key={number} className="card-print p-5 shadow-hard-sm">
                 <div className="flex items-center justify-between text-leaf">
                   <Icon aria-hidden className="size-5" />
                   <span className="font-mono text-xs">{number}</span>

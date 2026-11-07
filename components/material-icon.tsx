@@ -45,7 +45,7 @@ export function MaterialIcon({
   return (
     <span
       className={cn(
-        "grid shrink-0 place-items-center rounded-md border-[1.5px] border-ink",
+        "grid shrink-0 place-items-center border-[1.5px] border-ink",
         sizes,
         className,
       )}

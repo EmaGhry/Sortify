@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { observePresence, startPresence, type PresenceState } from "./presence";
-import { PresentationScreen, type PresentationView } from "./presentation";
 
 const destinations = {
   glass: { name: "Sticlă", color: "#4ade80", led: "verde" },
@@ -40,17 +38,54 @@ type Result = StationStatus & {
   history_saved?: boolean;
 };
 
-const automaticMessages = {
-  calibrating: "Lasă zona goală. Se calibrează camera…",
-  ready: "Pregătit. Așază un obiect în centrul cadrului.",
-  steady: "Ține obiectul nemișcat…",
-  remove: "Retrage obiectul pentru următoarea scanare.",
-} as const;
+/** Zona cu imagine reală din cadrul camerei, fără benzile negre (ex. telefon în portret pus într-un cadru lat). */
+function contentRect(video: HTMLVideoElement) {
+  const w = video.videoWidth;
+  const h = video.videoHeight;
+  const full = { x: 0, y: 0, w, h };
+  const sw = 64;
+  const sh = Math.max(8, Math.round((sw * h) / w));
+  const probe = document.createElement("canvas");
+  probe.width = sw;
+  probe.height = sh;
+  const context = probe.getContext("2d", { willReadFrequently: true });
+  if (!context) return full;
+  context.drawImage(video, 0, 0, sw, sh);
+  const px = context.getImageData(0, 0, sw, sh).data;
+  const dark = (x: number, y: number) => {
+    const i = (y * sw + x) * 4;
+    return (px[i] + px[i + 1] + px[i + 2]) / 3 < 24;
+  };
+  // o linie/coloană e "bandă" dacă aproape toți pixelii ei sunt negri
+  const colDark = (x: number, y0: number, y1: number) => {
+    let n = 0;
+    for (let y = y0; y <= y1; y++) if (dark(x, y)) n++;
+    return n >= 0.97 * (y1 - y0 + 1);
+  };
+  const rowDark = (y: number, x0: number, x1: number) => {
+    let n = 0;
+    for (let x = x0; x <= x1; x++) if (dark(x, y)) n++;
+    return n >= 0.97 * (x1 - x0 + 1);
+  };
+  let left = 0;
+  let right = sw - 1;
+  while (left < right && colDark(left, 0, sh - 1)) left++;
+  while (right > left && colDark(right, 0, sh - 1)) right--;
+  let top = 0;
+  let bottom = sh - 1;
+  while (top < bottom && rowDark(top, left, right)) top++;
+  while (bottom > top && rowDark(bottom, left, right)) bottom--;
+  const cw = right - left + 1;
+  const ch = bottom - top + 1;
+  if (cw < sw * 0.3 || ch < sh * 0.3) return full; // aproape tot negru: nu tăiem nimic
+  return { x: (left * w) / sw, y: (top * h) / sh, w: (cw * w) / sw, h: (ch * h) / sh };
+}
 
 function drawSquare(video: HTMLVideoElement, context: CanvasRenderingContext2D, size: number) {
-  const side = Math.min(video.videoWidth, video.videoHeight);
-  if (!side) throw new Error("Așteaptă pornirea camerei.");
-  context.drawImage(video, (video.videoWidth - side) / 2, (video.videoHeight - side) / 2,
+  if (!Math.min(video.videoWidth, video.videoHeight)) throw new Error("Așteaptă pornirea camerei.");
+  const area = contentRect(video);
+  const side = Math.min(area.w, area.h);
+  context.drawImage(video, area.x + (area.w - side) / 2, area.y + (area.h - side) / 2,
     side, side, 0, 0, size, size);
 }
 
@@ -70,8 +105,6 @@ function captureFrame(video: HTMLVideoElement) {
 }
 
 export function BenchKiosk() {
-  const stage = useRef<HTMLElement>(null);
-  const presentationTrigger = useRef<HTMLButtonElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);
   const mounted = useRef(false);
@@ -81,10 +114,6 @@ export function BenchKiosk() {
   const [camera, setCamera] = useState<"off" | "starting" | "on">("off");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
-  const [automatic, setAutomatic] = useState<PresenceState["phase"] | null>(null);
-  const [checking, setChecking] = useState(false);
-  const [presenting, setPresenting] = useState(false);
-  const autoActive = automatic !== null;
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -129,7 +158,6 @@ export function BenchKiosk() {
       next.getVideoTracks()[0]?.addEventListener("ended", () => {
         if (!mounted.current || stream.current !== next) return;
         stream.current = null;
-        setAutomatic(null);
         setCamera("off");
         setError("Camera s-a deconectat. Reconecteaz-o și pornește-o din nou.");
       }, { once: true });
@@ -144,7 +172,7 @@ export function BenchKiosk() {
   }
 
   const scan = useCallback(async (example?: Destination) => {
-    if (scanLock.current) return false;
+    if (scanLock.current) return;
     scanLock.current = true;
     setBusy(true);
     setResult(null);
@@ -165,156 +193,44 @@ export function BenchKiosk() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
       setResult(data);
-      return data.hardware !== "unconfirmed";
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Scanarea nu a putut fi terminată.");
-      return false;
     } finally {
       scanLock.current = false;
       setBusy(false);
     }
   }, []);
 
-  async function toggleAutomatic() {
-    setError(null);
-    if (autoActive) {
-      setAutomatic(null);
-      return;
-    }
-    if (!station || camera !== "on" || scanLock.current || checking) return;
-    if (station.mode === "bench") {
-      setChecking(true);
-      try {
-        const response = await fetch("/api/bench?view=hardware", { cache: "no-store" });
-        const data = await response.json();
-        if (!response.ok || !data.ready) {
-          throw new Error(data.error ?? "Verifică rețeaua Sortify-Bench și firmware-ul ESP32.");
-        }
-      } catch (cause) {
-        if (mounted.current) setError(cause instanceof Error ? cause.message : "ESP32 nu răspunde.");
-        return;
-      } finally {
-        if (mounted.current) setChecking(false);
-      }
-    }
-    if (mounted.current && !document.hidden && stream.current?.active) setAutomatic("calibrating");
-  }
-
-  useEffect(() => {
-    if (!autoActive || camera !== "on" || station?.mode === "simulation") return;
-    const sample = document.createElement("canvas");
-    sample.width = sample.height = 32;
-    const context = sample.getContext("2d", { willReadFrequently: true });
-    if (!context) return;
-    let presence = startPresence();
-    let lastTime = -1;
-    let stopped = false;
-    const timer = window.setInterval(() => {
-      const element = video.current;
-      if (stopped || scanLock.current || !element?.videoWidth || element.readyState < 2 || element.currentTime === lastTime) return;
-      lastTime = element.currentTime;
-      drawSquare(element, context, 32);
-      const step = observePresence(presence, context.getImageData(0, 0, 32, 32).data);
-      presence = step.state;
-      setAutomatic(presence.phase);
-      if (step.scan) void scan().then((ok) => {
-        if (!ok && !stopped) setAutomatic(null);
-      });
-    }, 125);
-    function onVisibility() {
-      if (document.hidden) {
-        stopped = true;
-        setAutomatic(null);
-      }
-    }
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => {
-      stopped = true;
-      window.clearInterval(timer);
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-  }, [autoActive, camera, scan, station?.mode]);
-
   const choice = result ? destinations[result.destination] : null;
-  const button = "border border-white/25 px-4 py-3 text-sm font-bold hover:bg-white/10 disabled:opacity-40";
-  const simulated = station?.mode === "simulation";
-
-  function exitPresentation() {
-    setPresenting(false);
-    if (document.fullscreenElement === stage.current) void document.exitFullscreen().catch(() => {});
-  }
-
-  useEffect(() => {
-    if (!presenting) return;
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setPresenting(false);
-    }
-    function onFullscreenChange() {
-      if (!document.fullscreenElement) setPresenting(false);
-    }
-    document.addEventListener("keydown", closeOnEscape);
-    document.addEventListener("fullscreenchange", onFullscreenChange);
-    return () => {
-      document.removeEventListener("keydown", closeOnEscape);
-      document.removeEventListener("fullscreenchange", onFullscreenChange);
-      presentationTrigger.current?.focus();
-    };
-  }, [presenting]);
-
-  let presentation: PresentationView = {
-    title: "Prezintă ambalajul",
-    detail: "Așază un singur obiect în centrul zonei de scanare.",
-    kind: "ready",
-  };
-  if (error || result?.hardware === "unconfirmed") {
-    presentation = { title: "Verifică stația", detail: error ?? "Comanda ESP32 nu a fost confirmată.", kind: "attention" };
-  } else if (busy) {
-    presentation = { title: "Se scanează…", detail: "Ține ambalajul nemișcat.", kind: "scanning" };
-  } else if (checking || automatic === "calibrating") {
-    presentation = { title: "Se pregătește stația", detail: "Lasă zona de scanare goală.", kind: "scanning" };
-  } else if (automatic === "steady") {
-    presentation = { title: "Ține ambalajul nemișcat", detail: "Camera se pregătește să-l scaneze.", kind: "scanning" };
-  } else if (result && choice && automatic !== "ready") {
-    const indication = simulated ? "LED simulat" : result.hardware === "acknowledged" ? "LED" : "";
-    const next = "Eliberează zona de scanare.";
-    presentation = {
-      title: choice.name,
-      detail: indication ? `${indication} ${choice.led} · ${next}` : next,
-      kind: "result",
-      color: choice.color,
-    };
-  } else if (!station || (!simulated && !autoActive)) {
-    presentation = { title: "Stația este în pauză", detail: "Deschide Configurare pentru a porni scanarea.", kind: "attention" };
-  }
+  const button = "btn-press border-[1.5px] border-ink bg-paper2 px-4 py-3 text-sm font-bold text-ink shadow-hard-sm hover:bg-paper disabled:opacity-40 disabled:shadow-none";
+  const primary = "btn-press border-[1.5px] border-ink bg-leaf-deep px-5 py-3 text-sm font-bold text-paper shadow-hard-sm hover:bg-leaf disabled:opacity-40 disabled:shadow-none";
 
   return (
-    <section ref={stage} lang="ro" className="mx-auto my-8 max-w-6xl overflow-auto bg-[#10221a] p-5 text-white sm:p-10">
-      <div inert={presenting || undefined}>
-      <header className="mb-7 flex flex-wrap items-start justify-between gap-4 border-b border-white/20 pb-5">
+    <section lang="ro" className="mx-auto max-w-[1200px] overflow-auto px-4 py-8 text-ink sm:px-6 sm:py-10">
+      <header className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b-[1.5px] border-ink pb-5">
         <div>
-          <p className="font-mono text-xs uppercase tracking-widest text-emerald-300">Sortify · Stație de sortare</p>
-          <h1 className="mt-2 text-3xl font-bold sm:text-5xl">Unde merge ambalajul?</h1>
-          <p className="mt-2 text-sm text-emerald-100">
-            {station ? `${modelSources[station.model_source]} · ${outputs[station.mode]}` : "Stație locală"}
+          <p className="font-semibold text-xs uppercase tracking-wider text-leaf">Sortify · Stație de sortare</p>
+          <h1 className="mt-2 font-display text-4xl leading-[1.05] tracking-tight sm:text-6xl">Unde merge ambalajul?</h1>
+          <p className="mt-3 inline-flex items-center gap-2 font-mono text-xs text-ink-soft">
+            <span aria-hidden className={`size-2 rounded-full ${station ? "bg-leaf animate-pulse-soft" : "bg-danger"}`} />
+            {station ? `${modelSources[station.model_source]} · ${outputs[station.mode]}` : "Stația nu este conectată"}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/operator" className={button}>Operator</Link>
-          <button ref={presentationTrigger} className={button} onClick={() => {
-            setPresenting(true);
-            void stage.current?.requestFullscreen?.().catch(() => {});
-          }}>Mod prezentare</button>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/operator" className={button}>Statistici operator</Link>
         </div>
       </header>
 
-      <div className="grid items-start gap-6 md:grid-cols-2">
-        <div>
+      <div className="grid items-stretch gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+        <div className="paper-sheet border-[1.5px] border-ink p-4 shadow-hard sm:p-5">
           {station?.mode === "simulation" ? (
-            <div className="border border-dashed border-white/30 p-5">
-              <p className="mb-4">Alege un caz pentru a verifica interfața.</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="border-[1.5px] border-dashed border-ink/40 p-5">
+              <p className="mb-4 font-display text-xl">Alege un caz pentru a verifica interfața.</p>
+              <div className="flex flex-wrap gap-3">
                 {(Object.keys(destinations) as Destination[]).map((destination) => (
-                  <button key={destination} className={button} disabled={busy} onClick={() => void scan(destination)}>
+                  <button key={destination} className={`${button} inline-flex items-center gap-2`} disabled={busy}
+                    onClick={() => void scan(destination)}>
+                    <span aria-hidden className="size-3 rounded-full border border-ink" style={{ background: destinations[destination].color }} />
                     {destinations[destination].name}
                   </button>
                 ))}
@@ -322,28 +238,29 @@ export function BenchKiosk() {
             </div>
           ) : (
             <>
-              <div className="relative mx-auto aspect-square w-full max-w-[48vh] overflow-hidden border border-white/25 bg-black/30">
+              <div className="relative mx-auto aspect-square w-full max-w-[52vh] overflow-hidden border-[1.5px] border-ink bg-ink">
                 <video ref={video} autoPlay muted playsInline className="size-full object-cover" />
-                {camera !== "on" && <p className="absolute inset-0 grid place-items-center p-6 text-center">Camera stației</p>}
+                {/* viewfinder corners */}
+                <div aria-hidden className="pointer-events-none absolute inset-[12%]">
+                  <span className="absolute left-0 top-0 size-8 border-l-4 border-t-4 border-paper/80" />
+                  <span className="absolute right-0 top-0 size-8 border-r-4 border-t-4 border-paper/80" />
+                  <span className="absolute bottom-0 left-0 size-8 border-b-4 border-l-4 border-paper/80" />
+                  <span className="absolute bottom-0 right-0 size-8 border-b-4 border-r-4 border-paper/80" />
+                </div>
+                {busy && <div aria-hidden className="scan-sweep pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-transparent to-emerald-300/40" />}
+                {camera !== "on" && (
+                  <p className="absolute inset-0 grid place-items-center p-6 text-center font-semibold text-xs uppercase tracking-wider text-paper/70">
+                    Camera stației
+                  </p>
+                )}
               </div>
-              <p className="my-3 text-sm text-emerald-100">Arată un singur obiect în centrul cadrului.</p>
+              <p className="my-4 text-sm text-ink-soft">Arată un singur obiect în centrul cadrului.</p>
               {camera === "on" ? (
-                <>
-                  <div className="flex flex-wrap gap-2">
-                    <button className={button} disabled={busy || checking || !station || autoActive} onClick={() => void scan()}>
-                      {busy ? "Se scanează…" : "Scanează obiectul"}
-                    </button>
-                    <button className={button} disabled={checking || (!autoActive && (busy || !station))}
-                      onClick={() => void toggleAutomatic()}>
-                      {autoActive ? "Oprește automatizarea" : checking ? "Se verifică ESP32…" : "Calibrează cu zona goală"}
-                    </button>
-                  </div>
-                  {automatic && <p role="status" className="mt-3 text-sm text-emerald-100">
-                    {busy ? "Se scanează…" : automaticMessages[automatic]}
-                  </p>}
-                </>
+                <button className={primary} disabled={busy || !station} onClick={() => void scan()}>
+                  {busy ? "Se scanează…" : "Scanează obiectul"}
+                </button>
               ) : (
-                <button className={button} disabled={!station || camera === "starting"} onClick={() => void startCamera()}>
+                <button className={primary} disabled={!station || camera === "starting"} onClick={() => void startCamera()}>
                   {camera === "starting" ? "Se pornește camera…" : "Pornește camera"}
                 </button>
               )}
@@ -351,45 +268,69 @@ export function BenchKiosk() {
           )}
         </div>
 
-        <div aria-live="polite" className="min-h-48 border border-white/25 p-6">
+        <div aria-live="polite" className="flex min-h-72 flex-col border-[1.5px] border-ink shadow-hard">
           {choice && result ? (
             <>
-              <p className="font-mono text-xs uppercase tracking-widest text-emerald-100">
-                {result.mode === "simulation" ? "Rezultat simulat" : modelSources[result.model_source]}
-              </p>
-              <h2 className="mt-2 text-3xl font-bold sm:text-5xl" style={{ color: choice.color }}>{choice.name}</h2>
-              {result.score !== null && (
-                <p className="mt-3 text-sm">{labels[result.label] ?? result.label} · scor {Math.round(result.score * 100)}%</p>
-              )}
-              <p className="mt-3 text-sm">
-                {result.hardware === "acknowledged" && `ESP32 a confirmat comanda · LED ${choice.led}`}
-                {result.hardware === "disabled" && "Rezultat pe ecran · ieșiri fizice dezactivate"}
-                {result.hardware === "unconfirmed" && "Comanda ESP32 este neconfirmată. Verifică placa înainte de a continua."}
-              </p>
-              {result.error && <p className="mt-2 text-sm text-amber-200">{result.error}</p>}
-              {result.history_saved === false && <p className="mt-2 text-sm text-amber-200">Rezultatul nu s-a salvat în istoric.</p>}
-              {result.inference_ms !== null && (
-                <p className="mt-4 font-mono text-xs text-emerald-100">
-                  Procesare {result.inference_ms} ms · Serviciu {result.elapsed_ms} ms
+              <div className="relative flex flex-1 flex-col justify-end overflow-hidden p-6 sm:p-8"
+                style={{ background: result.destination === "other" ? undefined : choice.color }}>
+                <div aria-hidden className="crumple absolute inset-0" />
+                <p className="relative text-sm font-bold uppercase tracking-wider text-ink/80">
+                  {result.mode === "simulation" ? "Rezultat simulat" : "Aruncă în containerul"}
                 </p>
-              )}
+                <h2 className="relative mt-2 break-words font-display text-[clamp(2.6rem,7vw,5.5rem)] leading-[0.95] tracking-tight">
+                  {choice.name}
+                </h2>
+                {result.score !== null && (
+                  <div className="relative mt-6 max-w-sm">
+                    <div className="flex justify-between font-mono text-xs text-ink/80">
+                      <span>{labels[result.label] ?? result.label}</span>
+                      <span>încredere {Math.round(result.score * 100)}%</span>
+                    </div>
+                    <div className="mt-1.5 h-2.5 border-[1.5px] border-ink bg-paper2/60">
+                      <div className="h-full bg-ink" style={{ width: `${Math.round(result.score * 100)}%` }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="paper-sheet border-t-[1.5px] border-ink px-6 py-4 text-sm sm:px-8">
+                <p className="font-bold">
+                  {result.hardware === "acknowledged" && `ESP32 a confirmat comanda · LED ${choice.led}`}
+                  {result.hardware === "disabled" && "Rezultat pe ecran · ieșiri fizice dezactivate"}
+                  {result.hardware === "unconfirmed" && "Comanda ESP32 este neconfirmată. Verifică placa înainte de a continua."}
+                </p>
+                {result.error && <p className="mt-2 text-warning">{result.error}</p>}
+                {result.history_saved === false && <p className="mt-2 text-warning">Rezultatul nu s-a salvat în istoric.</p>}
+                {result.inference_ms !== null && (
+                  <p className="mt-2 font-mono text-xs text-ink-soft">
+                    {modelSources[result.model_source]} · procesare {result.inference_ms} ms · serviciu {result.elapsed_ms} ms
+                  </p>
+                )}
+              </div>
             </>
           ) : (
-            <p className="text-2xl font-bold">{busy ? "Se analizează cadrul…" : "Așteaptă o scanare"}</p>
+            <div className="paper-sheet flex flex-1 flex-col justify-center p-6 sm:p-8">
+              <p className="text-sm font-bold uppercase tracking-wider text-ink/80">Rezultat</p>
+              <p className={`mt-2 font-display text-4xl leading-tight sm:text-5xl ${busy ? "animate-pulse-soft" : ""}`}>
+                {busy ? "Se analizează cadrul…" : "Așteaptă o scanare"}
+              </p>
+              <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                {(Object.keys(destinations) as Destination[]).map((destination) => (
+                  <li key={destination} className="inline-flex items-center gap-2">
+                    <span aria-hidden className="size-3 rounded-full border border-ink" style={{ background: destinations[destination].color }} />
+                    {destinations[destination].name}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
-          {error && <p role="alert" className="mt-3 text-sm text-amber-200">{error}</p>}
-          {!station && <button className={`${button} mt-4`} onClick={() => void refresh()}>Reconectează stația</button>}
+          {(error || !station) && (
+            <div className="border-t-[1.5px] border-ink bg-paper2 px-6 py-4 sm:px-8">
+              {error && <p role="alert" className="text-sm font-bold text-danger">{error}</p>}
+              {!station && <button className={`${button} mt-3`} onClick={() => void refresh()}>Reconectează stația</button>}
+            </div>
+          )}
         </div>
       </div>
-      </div>
-      {presenting && (
-        <PresentationScreen view={presentation} busy={busy}
-          source={simulated ? "Simulare · hardware dezactivat" : station?.mode === "preview" ? "Previzualizare · hardware dezactivat" : "Stație de sortare"}
-          onExit={exitPresentation}
-          onExample={simulated && !result ? () => void scan("metal") : undefined}
-          onReset={simulated && result ? () => setResult(null) : undefined}
-        />
-      )}
     </section>
   );
 }

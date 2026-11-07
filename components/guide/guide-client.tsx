@@ -30,16 +30,16 @@ export function GuideClient() {
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6 sm:py-14">
       <div className="mb-8 max-w-xl">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.24em] text-leaf">
+        <p className=" text-xs font-bold uppercase tracking-wider text-leaf">
           {t("guide.kicker")}
         </p>
-        <h1 className="mt-2 font-display text-4xl font-black leading-[0.98] tracking-tight sm:text-6xl">
+        <h1 className="mt-2 font-display text-4xl leading-[0.98] tracking-tight sm:text-6xl">
           {t("guide.title")}
         </h1>
         <p className="mt-4 text-base leading-relaxed text-ink-soft">{t("guide.subtitle")}</p>
       </div>
 
-      <div className="card-print mb-8 flex items-center gap-3 rounded-lg px-4 py-3.5 shadow-hard-sm">
+      <div className="card-print mb-8 flex items-center gap-3 px-4 py-3.5 shadow-hard-sm">
         <Search className="size-4.5 shrink-0 text-ink-soft" strokeWidth={2.2} />
         <input
           value={query}
@@ -51,12 +51,12 @@ export function GuideClient() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="card-print grid place-items-center rounded-xl py-16 text-center">
+        <div className="card-print grid place-items-center py-16 text-center">
           <div>
-            <span className="mx-auto grid size-12 -rotate-2 place-items-center rounded-md border-[1.5px] border-ink bg-paper">
+            <span className="mx-auto grid size-12 -rotate-2 place-items-center border-[1.5px] border-ink bg-paper">
               <Leaf className="size-6 text-leaf" />
             </span>
-            <p className="mt-3 font-mono text-xs uppercase tracking-[0.16em] text-ink-soft">
+            <p className="mt-3 font-semibold text-xs uppercase tracking-wider text-ink-soft">
               {t("impact.noData")}
             </p>
           </div>
@@ -75,13 +75,13 @@ export function GuideClient() {
 function GuideCard({ profile }: { profile: MaterialProfile }) {
   const { t, lang } = useI18n();
   return (
-    <article className="card-print rounded-xl p-5 transition-all hover:-translate-y-0.5 hover:shadow-hard">
+    <article className="card-print p-5 transition-all hover:-translate-y-0.5 hover:shadow-hard">
       <div className="flex items-center gap-3.5 border-b-[1.5px] border-ink pb-4">
         <MaterialIcon material={profile.id} size="lg" />
         <div className="min-w-0 flex-1">
-          <h2 className="font-display text-xl font-bold">{profile.label[lang]}</h2>
+          <h2 className="font-display text-xl">{profile.label[lang]}</h2>
           <span
-            className="mt-1.5 inline-block -rotate-1 rounded-md border-[1.5px] border-ink px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em]"
+            className="mt-1.5 inline-block -rotate-1 border-[1.5px] border-ink px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
             style={{ backgroundColor: `${profile.bin.color}55` }}
           >
             {profile.bin.label[lang]}
@@ -93,7 +93,7 @@ function GuideCard({ profile }: { profile: MaterialProfile }) {
 
       <div className="mt-4 grid gap-5 sm:grid-cols-2">
         <div>
-          <h3 className="mb-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-leaf">
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-leaf">
             {t("guide.whatGoes")}
           </h3>
           <ul className="space-y-2">
@@ -106,7 +106,7 @@ function GuideCard({ profile }: { profile: MaterialProfile }) {
           </ul>
         </div>
         <div>
-          <h3 className="mb-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-danger">
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-danger">
             {t("guide.whatDoesnt")}
           </h3>
           <ul className="space-y-2">
@@ -120,7 +120,7 @@ function GuideCard({ profile }: { profile: MaterialProfile }) {
         </div>
       </div>
 
-      <p className="mt-4 inline-block rounded-md border-[1.5px] border-ink bg-paper px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-ink-soft">
+      <p className="mt-4 inline-block border-[1.5px] border-ink bg-paper px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-ink-soft">
         {t("guide.co2Note")}: <span className="text-leaf">{formatGrams(profile.co2PerItemG, lang)} CO2</span>
       </p>
     </article>
