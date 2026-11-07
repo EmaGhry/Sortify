@@ -31,6 +31,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  agentRules: false,
   // Don't advertise the framework/version to attackers.
   poweredByHeader: false,
   async headers() {

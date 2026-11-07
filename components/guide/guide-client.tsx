@@ -3,12 +3,12 @@
 import { useMemo, useState } from "react";
 import { Check, Leaf, Search, X } from "lucide-react";
 import { MATERIAL_PROFILES, type MaterialProfile } from "@/lib/materials";
-import { MATERIALS, type Material } from "@/lib/types";
+import { STATION_MATERIALS, type Material } from "@/lib/types";
 import { useI18n } from "@/lib/i18n";
 import { MaterialIcon } from "@/components/material-icon";
 import { formatGrams } from "@/lib/utils";
 
-const ALL = MATERIALS as Material[];
+const ALL: readonly Material[] = STATION_MATERIALS;
 
 export function GuideClient() {
   const { t, lang } = useI18n();

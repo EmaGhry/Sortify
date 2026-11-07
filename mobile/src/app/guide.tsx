@@ -2,14 +2,14 @@ import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { Check, Leaf, Search, X } from "lucide-react-native";
 import { MATERIAL_PROFILES, type MaterialProfile } from "@shared/materials";
-import { MATERIALS, type Material } from "@shared/types";
+import { STATION_MATERIALS, type Material } from "@shared/types";
 import { formatGrams } from "@shared/utils";
 import { useI18n } from "@/lib/i18n";
 import { C, F, cardPrint } from "@/theme";
 import { BandHeader } from "@/components/BandHeader";
 import { MaterialIcon } from "@/components/MaterialIcon";
 
-const ALL = MATERIALS as Material[];
+const ALL: readonly Material[] = STATION_MATERIALS;
 
 export default function GuideScreen() {
   const { t, lang } = useI18n();

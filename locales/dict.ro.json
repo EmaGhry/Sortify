@@ -1,6 +1,8 @@
 {
   "app.tagline": "Scan it. Sort it. Save the planet.",
   "nav.scan": "Scanare",
+  "nav.station": "Stație",
+  "nav.operator": "Operator",
   "nav.history": "Istoric",
   "nav.impact": "Impact",
   "nav.guide": "Ghid",
@@ -79,7 +81,7 @@
   "badge.toastTitle": "Insignă deblocată!",
   "toast.errorTitle": "Ups, o eroare",
 
-  "error.noProvider": "Niciun provider AI configurat. Adaugă GOOGLE_AI_API_KEY sau OPENAI_API_KEY în .env.local, apoi repornește serverul.",
+  "error.noProvider": "Modelul echipei nu este disponibil. Pornește stația cu adresa modelului sau încearcă un exemplu demo.",
   "error.provider": "Serviciul AI a răspuns cu o eroare. Încearcă din nou sau folosește exemplul demo.",
   "error.tooLarge": "Imaginea este prea mare (max 8MB).",
   "error.badType": "Format de imagine nesuportat. Folosește JPG, PNG sau WebP.",
@@ -95,7 +97,7 @@
   "footer.built": "Construit de ByteForce pentru hackathon",
   "ticker.items": "O cutie de aluminiu = 3h de televizor ◆ 1 tonă de hârtie = 17 copaci ◆ sticla se reciclează la infinit ◆ PET → fibră textilă ◆ 1 baterie = 600.000 L apă ◆ CO2 evitat, nu promis ◆",
 
-  "material.PLASTIC.label": "Plastic",
+  "material.PLASTIC.label": "PET / plastic",
   "material.PLASTIC.bin": "Colectorul galben — plastic & metal",
   "material.PLASTIC.instruction.0": "Golește și clătește recipientul de resturi",
   "material.PLASTIC.instruction.1": "Tasează sticlele ca să ocupe mai puțin spațiu",
@@ -109,7 +111,7 @@
   "material.PLASTIC.dont.2": "Pensule, burete vechi",
   "material.PLASTIC.description": "Reciclarea PET-ului economisește până la 80% din energia necesară producerii de plastic nou.",
 
-  "material.PAPER.label": "Hârtie & carton",
+  "material.PAPER.label": "Hârtie / carton",
   "material.PAPER.bin": "Colectorul albastru — hârtie",
   "material.PAPER.instruction.0": "Hârtia trebuie să fie uscată — umezeala o face nereciclabilă",
   "material.PAPER.instruction.1": "Tasează cutiile de carton",
@@ -214,7 +216,7 @@
   "material.HAZARDOUS.dont.2": "Nu le depozita lângă mâncare",
   "material.HAZARDOUS.description": "Un litru de ulei turnat în chiuvetă poate polua până la 1.000 litri de apă.",
 
-  "material.OTHER.label": "Rezidual / necunoscut",
+  "material.OTHER.label": "Altele",
   "material.OTHER.bin": "Colectorul rezidual (gri)",
   "material.OTHER.instruction.0": "Dacă obiectul e reciclabil dar nu ești sigur, mai fă o fotografie de aproape",
   "material.OTHER.instruction.1": "Verifică ghidul Sortify pentru categorii",

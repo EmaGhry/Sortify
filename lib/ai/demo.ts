@@ -14,23 +14,24 @@ const DEMO_ITEMS: DemoItem[] = [
   { material: "METAL", confidence: 0.96, recyclable: true },
   { material: "PAPER", confidence: 0.9, recyclable: true },
   { material: "GLASS", confidence: 0.92, recyclable: true },
-  { material: "BATTERY", confidence: 0.89, recyclable: true },
+  { material: "OTHER", confidence: 0.89, recyclable: false },
 ];
 
 function enrichDemo(item: DemoItem, language: Language): AnalysisResult {
   const profile = MATERIAL_PROFILES[item.material];
   const prefix = `demo.${item.material}`;
+  const other = item.material === "OTHER";
   return {
     id: uid("demo"),
     createdAt: Date.now(),
     provider: "demo",
     demo: true,
-    itemName: pick(`${prefix}.itemName`)[language],
+    itemName: other ? profile.label[language] : pick(`${prefix}.itemName`)[language],
     confidence: item.confidence,
     recyclable: item.recyclable,
-    reasoning: pick(`${prefix}.reasoning`)[language],
-    aiTips: pickList(`${prefix}.tip`, 2)[language],
-    ecoFact: pick(`${prefix}.ecoFact`)[language],
+    reasoning: other ? undefined : pick(`${prefix}.reasoning`)[language],
+    aiTips: other ? [] : pickList(`${prefix}.tip`, 2)[language],
+    ecoFact: other ? undefined : pick(`${prefix}.ecoFact`)[language],
     material: item.material,
     binLabel: profile.bin.label[language],
     binColor: profile.bin.color,

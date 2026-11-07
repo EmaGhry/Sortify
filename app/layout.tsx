@@ -26,17 +26,17 @@ const jbmono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Sortify — Asistent AI pentru reciclare",
+    default: "Sortify Station · ByteForce",
     template: "%s · Sortify",
   },
   description:
-    "Scan it. Sort it. Save the planet. Sortify recunoaște obiectele reciclabile dintr-o fotografie și îți spune exact cum și unde le sortezi.",
+    "Stație de sortare pentru ambalaje, cu recunoaștere AI, control ESP32 și istoric pentru operator.",
   applicationName: "Sortify",
   authors: [{ name: "ByteForce" }],
   keywords: ["reciclare", "AI", "ecologie", "sortare deșeuri", "recycling", "hackathon"],
   openGraph: {
-    title: "Sortify — Asistent AI pentru reciclare",
-    description: "Scanează. Sortează. Salvează planeta.",
+    title: "Sortify Station · ByteForce",
+    description: "Stație de sortare pentru cantine și zone de pauză, cu recunoaștere AI și control ESP32.",
     siteName: "Sortify",
     type: "website",
   },
@@ -64,7 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Recycle className="size-3.5 text-leaf" />
                 Sortify — ByteForce
               </span>
-              <span>Scan it. Sort it. Save the planet.</span>
+              <span>Sortify Station · AI + ESP32</span>
             </div>
           </footer>
         </Providers>

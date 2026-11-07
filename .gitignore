@@ -37,3 +37,17 @@ mobile/AGENTS.md
 mobile/CLAUDE.md
 build-log.txt
 /s/
+
+# Bench station build and local data
+.pio/
+/.cache/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+/firmware/include/wifi_secrets.h
+/station/models/
+/station/data/
+/station/captures/
+/station/datasets/
+/station/runs/
